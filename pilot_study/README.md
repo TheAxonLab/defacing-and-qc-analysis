@@ -1,0 +1,3 @@
+- `statistical_analysis.ipynb` is the notebook that we use to run the statistical analysis in python for our pilot study
+- `dim_reduction_ABIDE.ipynb` is the test ground to experiment with dimensionality reduction of the IQMs.
+- `ManualRatings` contains the manual ratings on the pilot data
