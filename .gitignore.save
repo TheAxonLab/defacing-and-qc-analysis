@@ -1,0 +1,14 @@
+.ipynb_checkpoints/
+.vscode/
+ManualQC/
+dim_reduction_ABIDE.ipynb
+face.gca
+mri_deface
+mridefacer/
+plots/
+quickshear/
+run_afni_refacer.sh
+run_deepdefacer.sh
+run_mri_deface.sh
+run_mridefacer.sh
+talairach_mixed_with_skull.gca
