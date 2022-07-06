@@ -1,7 +1,8 @@
-simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file=""){
-    #' Simulate human ratings of image quality. The ratings are randomly sampled from {1,2,3,4} 
+simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings_range=1:4, bias = 1, 
+    labels = c("excluded", "poor", "good", "excellent")){
+    #' Simulate human ratings of image quality. The ratings are randomly sampled from ratings_range 
     #' and randomly distributed across subjects. To introduce a bias in the ratings of defaced images, 
-    #' we add +1 to a predefined precentage of the ratings on original images. The percentage of scan 
+    #' we add the bias to a predefined precentage of the ratings on original images. The percentage of scan 
     #' affected varies between raters.
     #'
     #' Parameters
@@ -11,6 +12,9 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file=""){
     #' n_rater = nbr of raters
     #' perc_biased = vector (1 x n_rater) establishing the percentage of scans biased per rater
     #' file = filename to save dataset
+    #' ratings_range = sequence defining the possible values of the manual ratings
+    #' bias = the number that is added to original ratings 
+    #' labels = vector of string corresponding to ratings' labels
     #'
     #' Returns 
     #' -------
@@ -26,16 +30,16 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file=""){
         #Each rater rates subjects picked at random
         ind_sub <- sample(1:n_sub, n_rated, replace = F)
         #random original ratings sampled from {1,2,3,4}
-        ratings <- sample(1:4, n_rated, replace = T)
+        ratings <- sample(ratings_range, n_rated, replace = T)
         manual_original[ind_sub, i] <- ratings
 
         #To simulate a positive bias towards defaced data, we improve the ratings of a 
         #predefined percentage of the original scans
         ind_rat <- sample(1:n_rated, round(n_rated*perc_biased[i]/100), replace = F)
         ratings_biased <- ratings
-        ratings_biased[ind_rat] <- ratings_biased[ind_rat] + 1
+        ratings_biased[ind_rat] <- ratings_biased[ind_rat] + bias
         #The scale stops at 4 so clip higher values to 4 
-        ratings_biased[ratings_biased == 5] <- 4
+        ratings_biased[ratings_biased > max(ratings_range)] <- max(ratings_range)
 
         #Set the biased ratings as the ratings on the defaced condition
         manual_defaced[ind_sub, i] <- ratings_biased
@@ -52,11 +56,11 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file=""){
     df <- data.frame(sub = sub)
     df$defaced <- factor(defaced, levels = 0:1, labels = c("original", "defaced"))
     df$rater <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
-    df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = 1:4, labels = c("excluded", "poor", "good", "excellent"))
+    df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = ratings_range, labels = labels)
 
     #Write dataframe to file
     if (file != ""){
-    saveRDS(df,file=sprintf("SimulatedData/SimulatedDefacedRatings_%.2fMissing.Rda",(n_sub-n_rated)/n_sub*100))
+        saveRDS(df,file=file)
     }
 
     return(df)
