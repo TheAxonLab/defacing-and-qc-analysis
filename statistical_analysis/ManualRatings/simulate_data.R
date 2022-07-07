@@ -1,5 +1,4 @@
-simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings_range=1:4, bias = 1, 
-    labels = c("excluded", "poor", "good", "excellent")){
+simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings_range=1:4, bias = 1){
     #' Simulate human ratings of image quality. The ratings are randomly sampled from ratings_range 
     #' and randomly distributed across subjects. To introduce a bias in the ratings of defaced images, 
     #' we add the bias to a predefined precentage of the ratings on original images. The percentage of scan 
@@ -56,7 +55,7 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings
     df <- data.frame(sub = sub)
     df$defaced <- factor(defaced, levels = 0:1, labels = c("original", "defaced"))
     df$rater <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
-    df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = ratings_range, labels = labels)
+    df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = ratings_range)
 
     #Write dataframe to file
     if (file != ""){
