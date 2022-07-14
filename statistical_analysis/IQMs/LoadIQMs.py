@@ -18,16 +18,16 @@ n_sub = 580 #nbr of subjects available in the dataset
 
 # def get_key(my_dict,val):
 #     """Get the key associated to the know value in a dictionary
-    
+
 #     Parameters
 #     ----------
 #     my_dict : dictionary to search the value in 
 #     val : value to search
-    
+
 #     Returns
 #     -------
 #     key : string associated to the value
-    
+
 #     """
 #     for key, value in my_dict.items():
 #          if val == value:
@@ -75,8 +75,8 @@ iqms_keys = ['%s' % s for s in range(1,62)]
 ## Build dataframe
 sub_id = np.arange(1, n_sub+1)
 sub_id = sub_id[..., np.newaxis]
-i_o = np.hstack((sub_id, iqms_original, np.zeros((n_sub,1))))
-i_d = np.hstack((sub_id, iqms_defaced,np.ones((n_sub,1))))
+i_o = np.hstack((sub_id, iqms_original, np.zeros((n_sub,1)))).astype(float)
+i_d = np.hstack((sub_id, iqms_defaced,np.ones((n_sub,1)))).astype(float)
 print(i_o.shape)
 print(i_d.shape)
 i_merge = np.vstack((i_o,i_d))
