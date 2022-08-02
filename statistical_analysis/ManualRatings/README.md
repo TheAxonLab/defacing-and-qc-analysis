@@ -1,9 +1,11 @@
 ## Statistical analysis associated to the defacing pre-registration.
 
 Manual ratings
+- `ANOVA.ipynb' is the notebook to run repeated measure ANOVA and check its assumptions.
 - `ContinuationRatioModel.ipynb` is the notebook to run continuation ratio model.
 - `LinearMixedEffectRegression.ipynb` is the notebook to run linear mixed effect regression. We decided to switch to this model because the implementation of the continuation ratio model is not able to deal with missing values.
 - In `VaryDatasetParameters.ipynb` I tried to change all dataset parameters to make the model defaced + (defaced|rater) converge to a non-singular solution without success.
+- In `VaryDatasetParameters_ANOVA.ipynb` I performed a sensitivity analysis to verify how many ratings do we need for the model to detect a significant effect of defacing.
 - `MissingValues.ipynb` is the notebook to investigate the maximum of missing values that can be introduced before breaking convergence.
 - `OrderedLogisticRegression.ipynb` is a notebook to run ordered logistic regression. It is a simpler model than mixed effect regression because it doesn't model between-rater variability. I used it to gain some understanding about logistic regression and continuation ratio assumption.
 - `VisualizeRatings.ipnyb` is a notebook to visualize the distributions of ratings in the defaced vs original conditions. 
