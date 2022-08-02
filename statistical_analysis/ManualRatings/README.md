@@ -1,7 +1,7 @@
 ## Statistical analysis associated to the defacing pre-registration.
 
 Manual ratings
-- `ANOVA.ipynb' is the notebook to run repeated measure ANOVA and check its assumptions.
+- `ANOVA.ipynb` is the notebook to run repeated measure ANOVA and check its assumptions.
 - `ContinuationRatioModel.ipynb` is the notebook to run continuation ratio model.
 - `LinearMixedEffectRegression.ipynb` is the notebook to run linear mixed effect regression. We decided to switch to this model because the implementation of the continuation ratio model is not able to deal with missing values.
 - In `VaryDatasetParameters.ipynb` I tried to change all dataset parameters to make the model defaced + (defaced|rater) converge to a non-singular solution without success.
