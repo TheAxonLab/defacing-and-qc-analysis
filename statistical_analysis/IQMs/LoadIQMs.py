@@ -18,16 +18,16 @@ n_sub = 580 #nbr of subjects available in the dataset
 
 # def get_key(my_dict,val):
 #     """Get the key associated to the know value in a dictionary
-    
+
 #     Parameters
 #     ----------
 #     my_dict : dictionary to search the value in 
 #     val : value to search
-    
+
 #     Returns
 #     -------
 #     key : string associated to the value
-    
+
 #     """
 #     for key, value in my_dict.items():
 #          if val == value:
@@ -67,10 +67,14 @@ n_sub = 580 #nbr of subjects available in the dataset
 #         raise ValueError("{} is an invalid name".format(sub))
 
 
+# +
 #For now generate random IQMs since we don't have the data yet
-iqms_original = np.random.rand(n_sub,61)
-iqms_defaced = np.random.rand(n_sub,61)
-iqms_keys = ['%s' % s for s in range(1,62)]
+iqms_original = np.random.rand(n_sub,62)
+iqms_defaced = np.random.rand(n_sub,62)
+
+#Give letters as name
+iqms_keys = [chr(x) for x in range(65, 91)] + [chr(x) for x in range(97, 133)]
+# -
 
 ## Build dataframe
 sub_id = np.arange(1, n_sub+1)
@@ -87,4 +91,4 @@ iqms_df = pd.DataFrame(i_merge, columns = ['subject'] + iqms_keys + ['defaced'])
 
 # Repeated measure MANOVA is only implemented in R
 # Thus we save the dataframe so we can load it in R
-iqms_df.to_feather('iqms_df.feather')
+iqms_df.to_csv('iqms_df.csv')
