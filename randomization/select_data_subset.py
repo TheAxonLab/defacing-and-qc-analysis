@@ -1,6 +1,8 @@
 import random
 
-random.seed(10)
+day = 220830
+time = 543417
+random.seed(day + time)
 # Select randomly 140 subjects from the IXI dataset
 randomlist = random.sample(range(1, 580), 140)
 # Randomly select 130 subjects to use for the analysis 
