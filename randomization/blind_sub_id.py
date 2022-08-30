@@ -9,7 +9,7 @@ data_path = "/data/datasets/DefacingPilotData/original"
 deface_path = "/data/derivatives/defacing/DefacingPilotData/pydeface/"
 blind_path = "/data/datasets/DefacingPilotData/shuffled"
 
-n_sub <- 580 #nbr of subjects available in the dataset
+n_sub <- 185 #nbr of subjects available in the dataset
 # -
 
 layout = BIDSLayout(data_path)
