@@ -1,4 +1,4 @@
-"""Load IQMs from MRIQC output into a dataframe"""
+# # Load IQMs from MRIQC output into a dataframe
 
 import os
 import json
@@ -94,6 +94,6 @@ print(site.shape)
 
 iqms_df = pd.DataFrame(np.hstack((i_merge,site)), columns = ['subject'] + iqms_keys + ['defaced'] + ['site'])
 
-# Repeated measure MANOVA is only implemented in R
+# Repeated-measures MANOVA is only implemented in R
 # Thus we save the dataframe so we can load it in R
 iqms_df.to_csv('iqms_df.csv')
