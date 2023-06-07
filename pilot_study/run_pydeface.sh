@@ -5,7 +5,7 @@ save_path="/data/derivatives/defacing/DefacingPilotData/pydeface/"
 
 cd $data_path
 
-for file in sub-CHUV*
+for file in sub-*
 do 
     T1_path="$data_path$file/ses-V1/anat/${file: -12}_ses-V1_run-1_T1w.nii.gz"
     T1_defaced_path="$save_path$file/ses-V1/anat/"
