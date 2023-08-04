@@ -1,81 +1,74 @@
-"""Reorganize the NIfTi files from the IXI dataset to conform to BIDS specifications
+#!/usr/bin/env python
+"""
+Reorganize the NIfTi files from the IXI dataset to conform
+to the BIDS specification.
 
-Before running this script, please download the T1w images and 
-the demographic information at https://brain-development.org/ixi-dataset/."""
+Before running this script, please download the T1w images and
+the demographic information at https://brain-development.org/ixi-dataset/.
+"""
 
-import os
 import shutil
 import json
 import pandas as pd
 import numpy as np
-from os.path import join
+from pathlib import Path
 
-#Create output dataset folder if doesn't exist
-input_path = join('/data','datasets','IXI-T1')
-output_path = join('/data','datasets','IXI-T1-BIDS')
-if not os.path.isdir(output_path):
-    os.mkdir(output_path)
+# Create output dataset folder if doesn't exist
+datasets_path = Path("/data/datasets")
+input_path = datasets_path / "IXI" / "sourcedata"
+output_path = datasets_path / "IXI"
+subinfo_xls = input_path / "IXI.xls"
+subinfo_tsv = output_path / "participants.tsv"
 
-    #Copy and convert demographic information to tsv file
-    subinfo_xls = join(input_path,'IXI.xls')
-    subinfo_tsv = join(output_path,'participants.tsv')
-    #Read excel file into a dataframe
-    data_xlsx = pd.read_excel(subinfo_xls, 'Table', index_col=None)
-    #Replace all columns having spaces with underscores
-    data_xlsx.columns = [c.replace(' ', '_') for c in data_xlsx.columns]
-    #Replace all fields having line breaks with space
-    df = data_xlsx.replace('\n', ' ',regex=True)
+if not subinfo_tsv.exists():  # Convert phenotypical information
+    # Read excel file into a dataframe
+    data_xlsx = pd.read_excel(subinfo_xls, "Table", index_col=None)
+    # Replace all columns having spaces with underscores
+    data_xlsx.columns = [c.replace(" ", "_") for c in data_xlsx.columns]
+    # Replace all fields having line breaks with space
+    df = data_xlsx.replace("\n", " ", regex=True)
     df = df.replace(np.nan, "n/a", regex=True)
-    #Reformat subject ID column to abide to BIDS specification
-    df = df.rename(columns={'IXI_ID': 'participant_id'})
-    #Add "sub-" in front of each subject ID
-    df['participant_id'] = df['participant_id'].apply(lambda x: f'sub-{x}')
-    
-    #Write dataframe into tsv
-    df.to_csv(subinfo_tsv, sep='\t', encoding='utf-8',  index=False, line_terminator='\r\n')
+    # Reformat subject ID column to abide to BIDS specification
+    df = df.rename(columns={"IXI_ID": "participant_id"})
+    # Add "sub-" in front of each subject ID
+    df["participant_id"] = df["participant_id"].apply(lambda x: f"sub-{x}")
 
-    #Create mandatory dataset_description.json
+    # Write dataframe into tsv
+    df.to_csv(
+        subinfo_tsv, sep="\t", encoding="utf-8", index=False, line_terminator="\r\n"
+    )
+
+    # Create mandatory dataset_description.json
     data_dict = {
-        'Name' : "IXI dataset",
+        "Name": "IXI dataset",
+        "SourceDatasets": [{"URL": "https://brain-development.org/ixi-dataset/"}],
         "BIDSVersion": "1.8.0",
-        "License": "CC BY-SA 3.0"}
-    data_json = json.dumps(data_dict)
+        "License": "CC BY-SA 3.0",
+    }
+    data_json = json.dumps(data_dict, indent=2)
 
-    #Copy hand-written participants.json
-    shutil.copy(join('/data','code','DefacingProject','bidsify','participants.json'), 
-                join(output_path,'participants.json'))
+    # Write out the JSON file
+    (output_path / "dataset_description.json").write_text(data_json)
 
-    #Write json to file
-    f = open(join(output_path,'dataset_description.json'), "x")
-    f.write(data_json)
-    f.close()
+    # Copy hand-written participants.json
+    shutil.copy(Path("./participants.json"), output_path / "participants.json")
 
-#Iterate over all the subjects in the input dataset folder
-for sub in os.listdir(input_path):
-    if sub.endswith(".nii.gz"):
-        #Extract the subject number from filename
-        sub_nbr = sub[3:6]
-        sub_path = join(output_path, f'sub-{sub_nbr}')
+# Iterate over all the subjects in the input dataset folder
+for sub in input_path.glob("*.nii.gz"):
+    # Extract the subject number from filename
+    sub_nbr = sub.name[3:6]
+    sub_path = output_path / f"sub-{sub_nbr}"
 
-        #Create subfolder for the subject
-        if not os.path.isdir(sub_path):
-            os.mkdir(sub_path)
-            #Create anat subfolder
-            anat_path = join(sub_path, 'anat')
-            os.mkdir(anat_path)
-            #Copy Nifti and adapt name
-            file_path = join(anat_path, f'sub-{sub_nbr}_T1w.nii.gz')
-            shutil.copy(join(input_path,sub), file_path)
+    # Create BIDS tree for the subject
+    (sub_path / "anat").mkdir(exist_ok=True, parents=True)
 
-            #Create a json file to encode acquisition site
-            #Extract acquisition site from file name
-            acq_site = sub.split('-')[1]
-            sub_dict = {'InstitutionName' : acq_site}
-            sub_json = json.dumps(sub_dict)
+    # Copy Nifti and adapt name
+    file_path = sub_path / "anat" / f"sub-{sub_nbr}_T1w.nii.gz"
+    file_path.symlink_to(sub)
 
-            #Write json to file
-            f = open(join(anat_path,f'sub-{sub_nbr}_T1w.json'), "x")
-            sub_json = json.dumps(sub_dict, f)
-
-        
-
+    # Create a JSON to record acquisition site
+    acq_site = sub.name.split("-")[1]
+    sub_dict = {"InstitutionName": acq_site}
+    (sub_path / "anat" / f"sub-{sub_nbr}_T1w.json").write_text(
+        json.dumps(sub_dict, indent=2)
+    )
