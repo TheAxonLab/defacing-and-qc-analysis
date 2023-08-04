@@ -1,0 +1,46 @@
+{
+    "Ethnic": {
+        "LongName" : "Ethnicity",
+        "Levels" : {
+            "1" : "White",
+            "4" : "Black or Black British",
+            "3" : "Asian or Asian Bristish",
+            "5" : "Chinese",
+            "6" : "Other"
+        }
+    },
+    "Marital": {
+        "LongName" : "Marital Status",
+        "Levels" : {
+            "1" : "Single",
+            "2" : "Married",
+            "4" : "Divorced or Separated",
+            "3" : "Cohabiting",
+            "5" : "Widowed"
+        }
+    },
+    "Occupation": {
+        "LongName" : "Occupation",
+        "Levels" : {
+            "1" : "Go out to full time employment",
+            "2" : "Go out to part time employment (<25hrs)",
+            "3" : "Study at college or university",
+            "4" : "Full-time housework",
+            "5" : "Retired",
+            "6" : "Unemployed",
+            "7" : "Work for pay at home",
+            "8" : "Other"
+        }
+    },
+    "Qualifications": {
+        "LongName" : "Qualification",
+        "Levels" : {
+            "1" : "No qualifications",
+            "2" : "O-levels, GCSEs, or CSEs",
+            "3" : "A-levels",
+            "4" : "Further education e.g. City & Guilds / NVQs",
+            "5" : "University or Polytechnic degree"
+        }
+    }
+
+}
