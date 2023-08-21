@@ -1,8 +1,6 @@
-import os
 import json
 import random
 from bids import BIDSLayout
-from shutil import copyfile
 from pathlib import Path
 
 
@@ -25,29 +23,26 @@ def copy_sub(input_path, output_path, s, id_nd, id_d):
 
     # Copy non-defaced data
     # Create subject directory under new dataset with its shuffled ID
-    os.makedirs(new_sub_path_nd)
+    new_sub_path_nd.mkdir(exist_ok=True, parents=True)
     # Copy json file
-    copyfile(
-        sub_path / f"sub-{s}_T1w.json",
-        new_sub_path_nd / f"sub-{id_nd:04d}_T1w.json",
+    Path(new_sub_path_nd / f"sub-{id_nd:04d}_T1w.json").symlink_to(
+        sub_path / f"sub-{s}_T1w.json"
     )
     # Copy nifti
-    copyfile(
-        sub_path / f"sub-{s}_T1w.nii.gz",
-        new_sub_path_nd / f"sub-{id_nd:04d}_T1w.nii.gz",
+    Path(new_sub_path_nd / f"sub-{id_nd:04d}_T1w.nii.gz").symlink_to(
+        sub_path / f"sub-{s}_T1w.nii.gz"
     )
 
     # Copy defaced data under a different subject ID
     # Create subject directory under new dataset with its shuffled ID
-    os.makedirs(new_sub_path_d)
+    new_sub_path_d.mkdir(exist_ok=True, parents=True)
     # Copy json file
-    copyfile(
-        sub_path / f"sub-{s}_T1w.json", new_sub_path_d / f"sub-{id_d:04d}_T1w.json"
+    Path(new_sub_path_d / f"sub-{id_d:04d}_T1w.json").symlink_to(
+        sub_path / f"sub-{s}_T1w.json"
     )
     # Copy nifti
-    copyfile(
-        sub_path / f"sub-{s}_T1w_defaced.nii.gz",
-        new_sub_path_d / f"sub-{id_d:04d}_T1w.nii.gz",
+    Path(new_sub_path_d / f"sub-{id_d:04d}_T1w.nii.gz").symlink_to(
+        sub_path / f"sub-{s}_T1w_defaced.nii.gz"
     )
 
 
@@ -74,17 +69,17 @@ blind_dict = dict()
 pos_dict = dict()
 
 # Create new dataset folder and copy basic dataset info
-os.makedirs(output_path, exist_ok=True)
-copyfile(
-    input_path / "dataset_description.json", output_path / "dataset_description.json"
+output_path.mkdir(exist_ok=True, parents=True)
+Path(output_path / "dataset_description.json").symlink_to(
+    input_path / "dataset_description.json"
 )
-copyfile(input_path / "LICENSE", output_path / "LICENSE")
+Path(output_path / "LICENSE").symlink_to(input_path / "LICENSE")
 
 # Randomly shuffle subject ID for both defaced and non-defaced
 shuffle_id = list(range(1, (n_sub + n_rep) * 2 + 1))
 random.shuffle(shuffle_id)
 
-j=0
+j = 0
 for i, s in enumerate(sub_id):
     blind_dict[f"{s}_non_defaced"] = shuffle_id[i]
     blind_dict[f"{s}_defaced"] = shuffle_id[i + n_sub]
@@ -109,12 +104,9 @@ for i, s in enumerate(sub_id):
             shuffle_id[n_sub * 2 + j + n_rep],
         )
 
-        #Increment counter of repeated subjects
-        j+=1
+        # Increment counter of repeated subjects
+        j += 1
 
-
-blind_dict_file = open("IXI_blind_dict.json", "w")
-blind_dict_file = json.dump(blind_dict, blind_dict_file)
-
-pos_dict_file = open("IXI_pos_dict.json", "w")
-pos_dict_file = json.dump(pos_dict, pos_dict_file)
+# Save dictionaries
+Path("IXI_blind_dict.json").write_text(json.dumps(blind_dict, indent=2))
+Path("IXI_pos_dict.json").write_text(json.dumps(pos_dict, indent=2))
