@@ -2,24 +2,29 @@
 
 import os
 import json
+import re
 import pandas as pd
 import numpy as np
 
-n_sub = 580 #nbr of subjects available in the dataset
+SITE = {
+    'HH': 0,
+    'Guys': 1,
+    'IOP': 2
+}
 
 randomization_path = "../../randomization/"
-data_path = "/data/derivatives/mriqc/RoyalCarpetPlot/DefacingPilotData/shuffled"
+data_path = "/home/cprovins/data/IXI-randomized/"
 
 #Load dictionary to map back anomymized id to participants' original identifier
-with open(os.path.join(randomization_path,"DefacingPilotData_blind_dict.json")) as json_file:
+with open(os.path.join(randomization_path,"IXI_blind_dict.json")) as json_file:
     blind_dict = json.load(json_file)
-with open(os.path.join(randomization_path,"DefacingPilotData_pos_dict.json")) as json_file:
+with open(os.path.join(randomization_path,"IXI_pos_dict.json")) as json_file:
     pos_dict = json.load(json_file)
 
 
 def get_key(my_dict,val):
     """
-    Get the key associated to the know value in a dictionary
+    Get the key associated to the known value in a dictionary
     Parameters
     ----------
     my_dict : dictionary to search the value in 
@@ -33,67 +38,37 @@ def get_key(my_dict,val):
              return key
 
 
-"""## Load IQMs
-iqms_original = np.zeros((n_sub,61))
-iqms_defaced = np.zeros((n_sub,61))
-sub_id = np.zeros((n_sub,1))
-for s in range(0,n_sub*2):
-    with open(os.path.join(data_path, 'sub-{}'.format(s), "ses-V1", "anat","sub-{}_ses-V1_run-1_T1w.json".format(s))) as json_file:
-        iqms = json.load(json_file)
-        iqms_keys = list(iqms.keys())
-        #Drop non-IQMs keys
-        iqms_keys.remove('bids_meta')
-        iqms_keys.remove('provenance')
-        iqms_keys.remove('size_x')
-        iqms_keys.remove('size_y')
-        iqms_keys.remove('size_z')
-        iqms_keys.remove('spacing_x')
-        iqms_keys.remove('spacing_y')
-        iqms_keys.remove('spacing_z')
+## Load IQMs
+iqms_df=pd.read_csv(os.path.join(data_path, 'derivatives', 'mriqc-23.1.0','group_T1w.tsv'),sep='\t')
+#Drop non-IQMs columns
+iqms_df.drop(labels=['size_x','size_y','size_z','spacing_x','spacing_y','spacing_z'], axis=1)
+
+#Add columns that we need to populate
+iqms_df['sub']=None
+iqms_df['defaced']=None
+iqms_df['site']=None
+
+for i in iqms_df.index:
+    pseudo = iqms_df['bids_name'][i]
+    pseudo = pseudo.split('_')[0]
+    #Extract number
+    s = int(re.search(r'\d+', pseudo).group())
 
     #Retrieve participant's original identifier
     sub = get_key(blind_dict,s)
-    pos = int(get_key(pos_dict,sub[0:8]))
+    iqms_df.at[i,'sub'] = sub.split('_')[0]
 
-    sub_id[pos]=sub
+    #Retrieve defacing status
+    iqms_df.at[i,'defaced'] = int(sub.split('_')[1]=='defaced')
 
-    if "non_deface" in sub:
-        for i,key in enumerate(iqms_keys):
-            iqms_original[pos,i] = iqms[key]
-    elif "pydeface" in sub:
-        for i,key in enumerate(iqms_keys):
-            iqms_defaced[pos,i] = iqms[key]
-    else:
-        raise ValueError("{} is an invalid name".format(sub))"""
-
-
-# +
-#For now generate random IQMs since we don't have the data yet
-iqms_original = np.random.rand(n_sub,62)
-iqms_defaced = np.random.rand(n_sub,62)
-
-#Give letters as name
-iqms_keys = [chr(x) for x in range(65, 91)] + [chr(x) for x in range(97, 133)]
-
-# +
-## Build dataframe
-sub_id = np.arange(1, n_sub+1)
-sub_id = sub_id[..., np.newaxis]
-i_o = np.hstack((sub_id, iqms_original, np.zeros((n_sub,1))))
-i_d = np.hstack((sub_id, iqms_defaced,np.ones((n_sub,1))))
-print(i_o.shape)
-print(i_d.shape)
-i_merge = np.vstack((i_o,i_d))
-#Verify shape matches expectation
-print(i_merge.shape)
-
-site1 = np.vstack((np.ones((185,1)), np.ones((197,1))*2, np.ones((198,1))*3))
-site = np.vstack((site1, site1))
-print(site.shape)
-# -
-
-iqms_df = pd.DataFrame(np.hstack((i_merge,site)), columns = ['subject'] + iqms_keys + ['defaced'] + ['site'])
+    #Retrieve acquisition site
+    print(os.path.join(data_path, pseudo, "anat", f"{pseudo}_T1w.json"))
+    with open(os.path.join(data_path, pseudo, "anat", f"{pseudo}_T1w.json")) as json_file:
+        sub_json = json.load(json_file)
+        print(sub_json['InstitutionName'])
+        print(SITE[sub_json['InstitutionName']])
+        iqms_df.at[i,'site'] = SITE[sub_json['InstitutionName']]
 
 # Repeated-measures MANOVA is only implemented in R
 # Thus we save the dataframe so we can load it in R
-iqms_df.to_csv('iqms_df.csv')
+iqms_df.to_csv('IXI_iqms_df.csv')
