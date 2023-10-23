@@ -66,7 +66,6 @@ n_rep = 40
 subset_rep = random.sample(sub_id, n_rep)
 
 blind_dict = dict()
-pos_dict = dict()
 
 # Create new dataset folder and copy basic dataset info
 output_path.mkdir(exist_ok=True, parents=True)
@@ -81,9 +80,8 @@ random.shuffle(shuffle_id)
 
 j = 0
 for i, s in enumerate(sub_id):
-    blind_dict[f"{s}_non_defaced"] = shuffle_id[i]
-    blind_dict[f"{s}_defaced"] = shuffle_id[i + n_sub]
-    pos_dict[f"{i}"] = s
+    blind_dict[shuffle_id[i]] = f"{s}_non_defaced"
+    blind_dict[shuffle_id[i + n_sub]] = f"{s}_defaced"
 
     # Copy the defaced and nondefaced images under two different IDs
     copy_sub(input_path, output_path, s, shuffle_id[i], shuffle_id[i + n_sub])
@@ -91,9 +89,8 @@ for i, s in enumerate(sub_id):
     # If the subject is part of the list of subject to repeat twice
     # copy the subject once again under another subject ID
     if s in subset_rep:
-        blind_dict[f"{s}_non_defaced"] = shuffle_id[n_sub * 2 + j]
-        blind_dict[f"{s}_defaced"] = shuffle_id[n_sub * 2 + j + n_rep]
-        pos_dict[f"{i}"] = s
+        blind_dict[shuffle_id[n_sub * 2 + j]] = f"{s}_non_defaced"
+        blind_dict[shuffle_id[n_sub * 2 + j + n_rep]] = f"{s}_defaced"
 
         # Copy the defaced and nondefaced images under two different IDs
         copy_sub(
@@ -109,4 +106,3 @@ for i, s in enumerate(sub_id):
 
 # Save dictionaries
 Path("IXI_blind_dict.json").write_text(json.dumps(blind_dict, indent=2))
-Path("IXI_pos_dict.json").write_text(json.dumps(pos_dict, indent=2))
