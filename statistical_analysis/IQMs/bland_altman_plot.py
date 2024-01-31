@@ -19,7 +19,7 @@ def bland_altman_plot_i(
     """
     mean = np.mean([data1, data2], axis=0)
     diff = data1 - data2  # Difference between data1 and data2
-    md = 0  # np.mean(diff)                   # Mean of the difference
+    md = np.mean(diff)  # Mean of the difference
     sd = np.std(diff, axis=0)  # Standard deviation of the difference
 
     ax.scatter(mean, diff, color="b")
@@ -77,11 +77,6 @@ iqms_defaced = iqms_defaced.drop(
         "Unnamed: 0",
         "sub",
         "defaced",
-        "qi_1",
-        "summary_bg_p05",
-        "summary_bg_mad",
-        "summary_bg_median",
-        "fber",
     ]
 )
 iqms_nondefaced = iqms_nondefaced.drop(
@@ -91,11 +86,6 @@ iqms_nondefaced = iqms_nondefaced.drop(
         "Unnamed: 0",
         "sub",
         "defaced",
-        "qi_1",
-        "summary_bg_p05",
-        "summary_bg_mad",
-        "summary_bg_median",
-        "fber",
     ]
 )
 
@@ -105,7 +95,8 @@ n_iqm = len(iqms_defaced.keys())
 # Build figure with subplots
 fig, axs = plt.subplots(8, 8, sharex=False, sharey=False, figsize=(45, 45))
 fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
-axs[7, 5].set_axis_off()
+
+# Hide the unpopulated plots
 axs[7, 6].set_axis_off()
 axs[7, 7].set_axis_off()
 
@@ -119,33 +110,36 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
 
     # Manually shift labels for readability
     if i in [
-        25,
-        26,
-        32,
-        33,
-        34,
+        27,
+        28,
+        30,
+        31,
         35,
         36,
+        37,
+        38,
         39,
         40,
-        42,
-        43,
+        41,
         44,
         45,
         47,
         48,
         49,
         50,
-        51,
+        52,
         53,
         54,
         55,
+        56,
+        58,
+        59,
+        60,
     ]:
         offsety[i] = -0.15
     if i == 29:
-        offsety[i] = -0.18
-    if i in [30, 31]:
-        offsety[i] = -0.15
+        offsety[i] = -0.20
+    if i == 60:
         offsetx[i] = 1.05
 
     # Manually highlight IQM that seem biased
@@ -187,13 +181,14 @@ fig.text(
 
 fig.text(
     0.09,
-    0.03,
-    "Fig.2 Only the entropy-focus criterion (efc) IQM presents a consistent bias between the defaced and non-defaced image (highlighted in yellow).\n \
-The bias is judged consistent because its value across subject is concentrated on one side of the grey line. \
-The latter lies at 0 and represents\n \
-the ideal condition where the IQM value would be identical between the image with and without face. \
-The red lines correspond to the 95%\n \
-confidence interval centered around the zero-difference reference line, specifically 0±1.96*SD.",
+    0.01,
+    "Fig.2 Only the entropy-focus criterion (efc) IQM presents a significance bias between the defaced and non-defaced image (highlighted in yellow).\n\
+The bias is visualized by the dashed grey line and is computed as the mean of the differences. A bias is considered significant when the 95%\nconfidence interval does \
+not contain the zero-difference line. \
+The 95% confidence interval is indicated by the dashed red line and is computed as bias±1.96*SD. \
+The zero-difference line represents the ideal condition where the IQM value would be identical between the image with and without\nface. \
+Additionally, the fact that qi_1, summary_p05, summary_bd_mad, summary_bg_median are problematically almost always 0 is also visible on\n\
+this plot. This led us to exclude those IQMs from our analysis.",
     fontsize=34,
     ha="left",
     wrap=True,
