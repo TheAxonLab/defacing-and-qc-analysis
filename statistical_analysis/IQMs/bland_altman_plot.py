@@ -30,14 +30,19 @@ def bland_altman_plot_i(
     ax.tick_params(labelsize=fontsize - 2)
     ax.set_facecolor(facecolor)
 
-    # Scientific notation of yaxis
+    # Scientific notation of y-axis
     ax.ticklabel_format(axis="y", style="scientific", scilimits=(-1, 1))
+
+    # Manually offset text for visibility
     ax.yaxis.offsetText.set_fontsize(fontsize - 2)
     ty = ax.yaxis.get_offset_text()
     ty.set_x(offsety)
-    ax.ticklabel_format(axis="x", style="scientific", scilimits=(-5, 5))
-    ax.xaxis.offsetText.set_fontsize(fontsize - 2)
+
     # Scientific notation of xaxis
+    ax.ticklabel_format(axis="x", style="scientific", scilimits=(-5, 5))
+
+    # Manually offset text for visibility
+    ax.xaxis.offsetText.set_fontsize(fontsize - 2)
     pad = plt.rcParams["xtick.major.size"] + plt.rcParams["xtick.major.pad"]
 
     def bottom_offset(self, bboxes, bboxes2):
@@ -66,10 +71,30 @@ iqms_nondefaced = iqms_nondefaced.reset_index(drop=True)
 
 # Drop non-IQM columns
 iqms_defaced = iqms_defaced.drop(
-    columns=["bids_name", "site", "Unnamed: 0", "sub", "defaced"]
+    columns=[
+        "bids_name",
+        "site",
+        "Unnamed: 0",
+        "sub",
+        "defaced",
+        "qi_1",
+        "summary_bg_p05",
+        "summary_bg_mad",
+        "summary_bg_median",
+    ]
 )
 iqms_nondefaced = iqms_nondefaced.drop(
-    columns=["bids_name", "site", "Unnamed: 0", "sub", "defaced"]
+    columns=[
+        "bids_name",
+        "site",
+        "Unnamed: 0",
+        "sub",
+        "defaced",
+        "qi_1",
+        "summary_bg_p05",
+        "summary_bg_mad",
+        "summary_bg_median",
+    ]
 )
 
 # Extract number of IQMs
@@ -78,11 +103,14 @@ n_iqm = len(iqms_defaced.keys())
 # Build figure with subplots
 fig, axs = plt.subplots(8, 8, sharex=False, sharey=False, figsize=(45, 45))
 fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
+axs[7, 2].set_axis_off()
+axs[7, 3].set_axis_off()
+axs[7, 4].set_axis_off()
 axs[7, 5].set_axis_off()
 axs[7, 6].set_axis_off()
 axs[7, 7].set_axis_off()
 
-# Variables to help tweek the plot manually for readability
+# Variables to help tweak the plot manually for readability
 offsety = np.zeros((n_iqm, 1))
 offsetx = np.ones((n_iqm, 1))
 facecolor = [axs[0, 0].get_facecolor() for i in range(n_iqm)]
@@ -92,11 +120,14 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
 
     # Manually shift labels for readability
     if i in [
+        25,
+        26,
+        32,
+        33,
         34,
         35,
         36,
         37,
-        38,
         39,
         40,
         41,
@@ -108,53 +139,24 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         47,
         48,
         49,
+        50,
+        51,
+        52,
         53,
-        57,
-        58,
-        59,
+        54,
+        55,
+        56,
     ]:
         offsety[i] = -0.15
     if i == 29:
         offsety[i] = -0.18
-    if i == 52:
-        offsety[i] = -0.21
+    if i in [30, 31]:
+        offsety[i] = -0.15
         offsetx[i] = 1.05
 
     # Manually highlight IQM that seem biased
     if i in [
-        0,
-        1,
         2,
-        7,
-        8,
-        10,
-        11,
-        13,
-        15,
-        16,
-        19,
-        20,
-        21,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        37,
-        38,
-        41,
-        42,
-        43,
-        44,
-        46,
-        47,
-        48,
-        50,
-        51,
-        55,
-        56,
     ]:
         facecolor[i] = (1, 1, 0.6, 0.2)
 
@@ -167,13 +169,18 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         axs[i // 8, i % 8],
         fontsize=22,
         offsety=offsety[i],
-        offsetx=[i],
+        offsetx=offsetx[i],
         facecolor=facecolor[i],
     )
 
 # Figure description
+
 fig.text(
-    0.5, 0.2, "Mean of IQM on non-defaced and defaced images", fontsize=32, ha="center"
+    0.5,
+    0.085,
+    "Mean of IQM on non-defaced and defaced images",
+    fontsize=32,
+    ha="center",
 )
 fig.text(
     0.09,
@@ -183,14 +190,15 @@ fig.text(
     va="center",
     rotation="vertical",
 )
+
 fig.text(
     0.09,
-    0.03,
-    "Fig.2 IQMs vary after defacing. Many of the IQMs are biased by the facial features removal \
-(cf plots highlighted in yellow). The grey line on the\nBland-Altman plots lies at 0 and represents the ideal condition\
- where the IQM value would be identical between the image with and without face.\nThis means that if the points are \
-concentrated above or below the grey line, the IQM is biased by defacing. The red lines correspond to the 95%\nconfidence\
- interval centered around the zero-difference reference line, specifically 0±1.96*SD.",
+    0.01,
+    "Figure S2. Only the entropy-focus criterion (efc) IQM presents a significance bias between the defaced and non-defaced image (highlighted in yellow).\n\
+The bias is visualized by the dashed grey line and is computed as the mean of the differences. A bias is considered significant when the 95%\nconfidence interval does \
+not contain the zero-difference line. \
+The 95% confidence interval is indicated by the dashed red line and is computed as bias±1.96*SD. \
+The zero-difference line represents the ideal condition where the IQM value would be identical between the image with and without\nface.",
     fontsize=34,
     ha="left",
     wrap=True,
@@ -198,4 +206,4 @@ concentrated above or below the grey line, the IQM is biased by defacing. The re
 )
 
 # Save figure
-plt.savefig("BlandAltman61IQMs.pdf", dpi=200)
+plt.savefig("BlandAltman58IQMs.pdf", dpi=200)
