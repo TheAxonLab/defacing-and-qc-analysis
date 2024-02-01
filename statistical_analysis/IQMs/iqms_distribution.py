@@ -148,7 +148,7 @@ fig.text(
 fig.text(
     0.09,
     0.03,
-    "Fig S1. Distribution of the IQMs. The IQMs calculated from both defaced and non-defaced images were pooled together to draw the distributions.\n\
+    "Figure S1. Distribution of the IQMs. The IQMs calculated from both defaced and non-defaced images were pooled together to draw the distributions.\n\
 This plot shows that qi_1, summary_bg_p05 are problematically always zero, while summary_bg_mad, summary_bg_median are always 0 except for\n\
 two images which correspond to the defaced and non-defaced image of the same subject. These observation led us to exclude those IQMs from our\n\
 analysis. Further investigation is needed to understand why these IQMs seem to be erroneously computed.",
@@ -159,4 +159,4 @@ analysis. Further investigation is needed to understand why these IQMs seem to b
 )
 
 # Save figure
-plt.savefig("IQMs_distribution.pdf", dpi=200)
+plt.savefig("IQMs_distribution.png", dpi=200)

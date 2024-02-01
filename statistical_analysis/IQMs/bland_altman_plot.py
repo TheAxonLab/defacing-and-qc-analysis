@@ -19,7 +19,7 @@ def bland_altman_plot_i(
     """
     mean = np.mean([data1, data2], axis=0)
     diff = data1 - data2  # Difference between data1 and data2
-    md = 0  # np.mean(diff)                   # Mean of the difference
+    md = np.mean(diff)                   # Mean of the difference
     sd = np.std(diff, axis=0)  # Standard deviation of the difference
 
     ax.scatter(mean, diff, color="b")
@@ -53,7 +53,7 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
-
+## Bland-Altman plot for IQMs
 # Load IQMs
 iqms_df = pd.read_csv("IXI_iqms_df.csv")
 
@@ -102,7 +102,7 @@ n_iqm = len(iqms_defaced.keys())
 
 # Build figure with subplots
 fig, axs = plt.subplots(8, 8, sharex=False, sharey=False, figsize=(45, 45))
-fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
+fig.suptitle("Bland-Altman Plot for IQMs", fontsize=36, y=0.91)
 axs[7, 2].set_axis_off()
 axs[7, 3].set_axis_off()
 axs[7, 4].set_axis_off()
@@ -194,7 +194,7 @@ fig.text(
 fig.text(
     0.09,
     0.01,
-    "Figure S2. Only the entropy-focus criterion (efc) IQM presents a significance bias between the defaced and non-defaced image (highlighted in yellow).\n\
+    "Figure S2. Bland-Altman plots for all non-excluded IQMs. Only the entropy-focus criterion (efc) IQM presents a significant bias between the defaced and non-defaced image (highlighted in yellow).\n\
 The bias is visualized by the dashed grey line and is computed as the mean of the differences. A bias is considered significant when the 95%\nconfidence interval does \
 not contain the zero-difference line. \
 The 95% confidence interval is indicated by the dashed red line and is computed as bias±1.96*SD. \
@@ -206,4 +206,90 @@ The zero-difference line represents the ideal condition where the IQM value woul
 )
 
 # Save figure
-plt.savefig("BlandAltman58IQMs.pdf", dpi=200)
+plt.savefig("BlandAltman58IQMs.png", dpi=200)
+
+
+## Bland-Altman plot for principal components
+# Load principal components (PCs)
+pc_df = pd.read_csv("IXI_projected_iqms_df.csv")
+
+# Separate PCs from defaced and nondefaced images in two dataframes
+pc_defaced = pc_df[pc_df["defaced"] == 1]
+pc_nondefaced = pc_df[pc_df["defaced"] == 0]
+
+# Reorder the dataframes so the subjects' order match
+pc_defaced = pc_defaced.sort_values("sub")
+pc_nondefaced = pc_nondefaced.sort_values("sub")
+
+# Reset the index to start from 0
+pc_defaced = pc_defaced.reset_index(drop=True)
+pc_nondefaced = pc_nondefaced.reset_index(drop=True)
+
+# Drop non-PCs columns
+pc_defaced = pc_defaced.drop(
+    columns=[
+        "site",
+        "Unnamed: 0",
+        "sub",
+        "defaced",
+    ]
+)
+pc_nondefaced = pc_nondefaced.drop(
+    columns=[
+        "site",
+        "Unnamed: 0",
+        "sub",
+        "defaced",
+    ]
+)
+
+# Build figure with subplots
+fig, axs = plt.subplots(3, 3, sharex=False, sharey=False, figsize=(45, 45))
+fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
+
+# Generate one BA plot per PC
+for i, (key, pc_d) in enumerate(pc_defaced.items()):
+
+    # BA plot
+    pc_nd = pc_nondefaced[key]
+    bland_altman_plot_i(
+        pc_nd,
+        pc_d,
+        key,
+        axs[i // 3, i % 3],
+        fontsize=32,
+    )
+
+# Figure description
+
+fig.text(
+    0.5,
+    0.07,
+    "Mean of principal component on non-defaced and defaced images",
+    fontsize=38,
+    ha="center",
+)
+fig.text(
+    0.07,
+    0.5,
+    "PC on non-defaced image - PC on defaced image",
+    fontsize=38,
+    va="center",
+    rotation="vertical",
+)
+
+fig.text(
+    0.09,
+    0.02,
+    "Figure S3. No principal component (PC) present a significant bias between the defaced and non-defaced image.The bias is visualized by the \n\
+dashed grey line and is computed as the mean of the differences. A bias is considered significant when the 95% confidence interval does\n\
+not contain the zero-difference line. The 95% confidence interval is indicated by the dashed red line and is computed as bias±1.96*SD.\n\
+The zero-difference line represents the ideal condition where the IQM value would be identical between the image with and without face.",
+    fontsize=34,
+    ha="left",
+    wrap=True,
+    fontweight="bold",
+)
+
+# Save figure
+plt.savefig("BlandAltmanPC.png", dpi=200)
