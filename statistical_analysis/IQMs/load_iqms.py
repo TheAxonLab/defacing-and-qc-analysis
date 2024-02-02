@@ -1,10 +1,9 @@
 # # Load IQMs from MRIQC output into a dataframe
 
-import os
 import json
 import re
 import pandas as pd
-import numpy as np
+from pathlib import Path
 
 SITE = {
     'HH': 0,
@@ -12,15 +11,15 @@ SITE = {
     'IOP': 2
 }
 
-randomization_path = "../../randomization/"
-data_path = "/home/cprovins/data/IXI-randomized/"
+randomization_path = Path("../../randomization/")
+data_path = Path("/home/cprovins/data/IXI-randomized/")
 
-#Load dictionary to map back anomymized id to participants' original identifier
-with open(os.path.join(randomization_path,"IXI_blind_dict.json")) as json_file:
+#Load dictionary to map back anonymized id to participants' original identifier
+with open(randomization_path / "IXI_blind_dict.json") as json_file:
     blind_dict = json.load(json_file)
 
 ## Load IQMs
-iqms_df=pd.read_csv(os.path.join(data_path, 'derivatives', 'mriqc-23.1.0','group_T1w.tsv'),sep='\t')
+iqms_df=pd.read_csv(data_path / 'derivatives' / 'mriqc-23.1.0'/ 'group_T1w.tsv',sep='\t')
 #Drop non-IQMs columns
 iqms_df = iqms_df.drop(labels=['size_x','size_y','size_z','spacing_x','spacing_y','spacing_z'], axis=1)
 
@@ -43,10 +42,10 @@ for i in iqms_df.index:
     iqms_df.at[i,'defaced'] = int(sub.split('_')[1]=='defaced')
 
     #Retrieve acquisition site
-    with open(os.path.join(data_path, pseudo, "anat", f"{pseudo}_T1w.json")) as json_file:
+    with open(data_path / pseudo / "anat" / f"{pseudo}_T1w.json") as json_file:
         sub_json = json.load(json_file)
         iqms_df.at[i,'site'] = SITE[sub_json['InstitutionName']]
 
 # Repeated-measures MANOVA is only implemented in R
 # Thus we save the dataframe so we can load it in R
-iqms_df.to_csv('IXI_iqms_df.csv')
+iqms_df.to_csv('IXI_iqms_df_test.csv')

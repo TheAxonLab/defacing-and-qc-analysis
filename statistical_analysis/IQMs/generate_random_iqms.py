@@ -7,8 +7,6 @@ import numpy as np
 
 n_sub = 580  # nbr of subjects available in the dataset
 
-randomization_path = "../../randomization/"
-
 # For now generate random IQMs since we don't have the data yet
 iqms_original = np.random.rand(n_sub, 62)
 iqms_defaced = np.random.rand(n_sub, 62)
