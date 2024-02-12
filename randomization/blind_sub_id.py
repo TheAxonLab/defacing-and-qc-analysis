@@ -61,9 +61,29 @@ sub_id = layout.get_subjects()
 sub_id.sort()
 n_sub = len(sub_id)
 
-# Randomly select 40 subjects that will be shown twice in both conditions
+# Extract participants from Hammersmith Hospital
+hh_sub = []
+for subject_folder in input_path.iterdir():
+    if subject_folder.is_dir() and subject_folder.name.startswith("sub-"):
+        json_file_path = subject_folder / "anat" / f"{subject_folder.name}_T1w.json"
+        if json_file_path.exists():
+            # Open and read the JSON file
+            with json_file_path.open("r") as json_file:
+                try:
+                    json_data = json.load(json_file)
+                    institution_name = json_data.get("InstitutionName")
+                    if institution_name == "HH":
+                        hh_sub.append(subject_folder.name.replace("sub-", "", 1))
+                except json.JSONDecodeError as e:
+                    print(
+                        f"Error reading JSON for subject {subject_folder.name}: {str(e)}"
+                    )
+        else:
+            print(f"JSON file not found for subject {subject_folder.name}")
+
+# Randomly select 40 subjects from the Hammersmith Hospital site that will be shown twice in both conditions
 n_rep = 40
-subset_rep = random.sample(sub_id, n_rep)
+subset_rep = random.sample(hh_sub, n_rep)
 
 blind_dict = dict()
 
