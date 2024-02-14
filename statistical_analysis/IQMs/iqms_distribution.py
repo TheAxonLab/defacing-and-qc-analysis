@@ -1,4 +1,3 @@
-import types
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,14 +10,13 @@ def iqm_dist(
     ax,
     fontsize,
     offsety=0,
-    offsetx=1,
     facecolor=(1.0, 1.0, 1.0, 1.0),
 ):
     """
     Function to plot one IQM distribution
     """
     
-    sns.histplot(iqm, kde=False, bins=15, ax=ax)
+    sns.histplot(data, kde=False, bins=15, ax=ax)
 
     ax.set_title(data_label, fontsize=fontsize + 2)
     ax.tick_params(labelsize=fontsize - 2)

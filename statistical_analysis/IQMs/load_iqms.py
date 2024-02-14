@@ -48,4 +48,4 @@ for i in iqms_df.index:
 
 # Repeated-measures MANOVA is only implemented in R
 # Thus we save the dataframe so we can load it in R
-iqms_df.to_csv('IXI_iqms_df_test.csv')
+iqms_df.to_csv('IXI_iqms_df.csv')
