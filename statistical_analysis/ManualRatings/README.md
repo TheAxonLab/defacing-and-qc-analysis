@@ -1,18 +1,13 @@
-<!-- #region -->
 ## Statistical analysis associated to the defacing pre-registration.
 
 Manual ratings
 
+- The folder `simulation` contains the code pertaining to simulating manual ratings. We used simulations to build and test the models as well as determine the study design at the time of pre-registration.
 
 - `ANOVA.ipynb` is the notebook to run repeated-measures ANOVA and check its assumptions.
-- In `VaryDatasetParameters_ANOVA.ipynb` I performed a sensitivity analysis to verify how many ratings do we need for the model to detect a significant effect of defacing.
 
+- `find_subset_manual_ratings.py` is used to extract from the MRIQC derivatives of the IXI dataset only the reports of subjects that were acquired at the Hammersmith Hospital and copy those subjects under "IXI-manual-only"
 
 - `LinearMixedEffectModels.ipynb` is the alternative notebook we will use in case one of the assumption of the repeated-measures ANOVA is violated.
 
-
 - `VisualizeRatings.ipnyb` is a notebook to visualize the distributions of ratings in the defaced vs original conditions.
-
-
-- `simulate_data.R` is a script to simulate raters manually assigning quality grades to subjects in original and defaced conditions. The simulated data have a positive bias towards defaced ratings.
-<!-- #endregion -->

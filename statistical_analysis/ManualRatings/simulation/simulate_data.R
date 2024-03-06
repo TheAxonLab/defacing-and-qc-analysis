@@ -1,8 +1,9 @@
-simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings_range=1:4, bias = 1){
+simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, ratings_range=1:4, bias = 1){
     #' Simulate human ratings of image quality. The ratings are randomly sampled from ratings_range 
     #' and randomly distributed across subjects. To introduce a bias in the ratings of defaced images, 
     #' we add the bias to a predefined precentage of the ratings on original images. The percentage of scan 
-    #' affected varies between raters.
+    #' affected varies between raters. By assigning a different number to n_sub and n_rated, we can simulate
+    #' missing data.
     #'
     #' Parameters
     #' ----------
@@ -10,7 +11,6 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings
     #' n_sub = nbr of subjects in the dataset
     #' n_rater = nbr of raters
     #' perc_biased = vector (1 x n_rater) establishing the percentage of scans biased per rater
-    #' file = filename to save dataset
     #' ratings_range = sequence defining the possible values of the manual ratings
     #' bias = the number that is added to original ratings 
     #' labels = vector of string corresponding to ratings' labels
@@ -57,19 +57,15 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", ratings
     df$rater <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
     df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = ratings_range)
 
-    #Write dataframe to file
-    if (file != ""){
-        saveRDS(df,file=file)
-    }
-
     return(df)
 }
 
-simulate_normal_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", mean=20, sd=10, bias = 10){
+simulate_normal_data <- function(n_rated, n_sub, n_rater, perc_biased, mean=20, sd=10, bias = 10){
     #' Simulate human ratings of image quality. The ratings are randomly sampled from a normal distribution 
     #' and randomly distributed across subjects. To introduce a bias in the ratings of defaced images, 
     #' we add the bias to a predefined precentage of the ratings on original images. The percentage of scan 
-    #' affected varies between raters.
+    #' affected varies between raters. By assigning a different number to n_sub and n_rated, we can simulate
+    #' missing data.
     #'
     #' Parameters
     #' ----------
@@ -130,10 +126,21 @@ simulate_normal_data <- function(n_rated, n_sub, n_rater, perc_biased, file="", 
     df$rater <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
     df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)))
 
-    #Write dataframe to file
-    if (file != ""){
-        saveRDS(df,file=file)
-    }
-
     return(df)
 }
+
+# Simulate normally distributed data
+n_sub <- 185 #nbr of subjects available in the dataset
+n_rated <- 185
+n_rater <- 4 #nbr of raters
+mean <- 20
+sd <- 10
+#Define for each rater the percentage of biased ratings
+perc_biased <- c(20, 40, 50, 60)
+bias <- 10
+
+df <- simulate_normal_data(n_rated, n_sub, n_rater, perc_biased, mean=mean, sd=sd, bias=bias)
+df$ratings <- as.numeric(df$ratings)
+
+#Write dataframe to file
+saveRDS(df, file = "simulated_normal_ratings.rds")
