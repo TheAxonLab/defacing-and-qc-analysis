@@ -25,7 +25,7 @@ for db_name in database_names:
 # Select the database and extract all ratings
 db = client.data_base_qkay
 ratings = db.ratings
-df = ratings.find_pandas_all({"dataset": "IXI_mriqc-23.1.0"})
+df = ratings.find_pandas_all({"dataset": "IXI dataset - MRIQC derivatives"})
 
 #Drop columns we don't need
 df = df.drop(columns = ['_id', 'md5sum'])
