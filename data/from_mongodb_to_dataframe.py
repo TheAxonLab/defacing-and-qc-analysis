@@ -27,6 +27,10 @@ db = client.data_base_qkay
 ratings = db.ratings
 df = ratings.find_pandas_all({"dataset": "IXI dataset - MRIQC derivatives"})
 
+# Replace newline characters in the 'comments' column with a space
+# so that comments do not get split into multiple lines
+df["comments"] = df["comments"].str.replace("\n", ", ")
+
 #Drop columns we don't need
 df = df.drop(columns = ['_id', 'md5sum'])
 
