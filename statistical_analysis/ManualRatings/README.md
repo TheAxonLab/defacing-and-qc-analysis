@@ -10,4 +10,6 @@ Manual ratings
 
 - `LinearMixedEffectModels.ipynb` is the alternative notebook we will use in case one of the assumption of the repeated-measures ANOVA is violated.
 
-- `VisualizeRatings.ipnyb` is a notebook to visualize the distributions of ratings in the defaced vs original conditions.
+- `VisualizeIXIRatings.ipnyb` is a notebook to explore the ratings assigned to the IXI dataset by 4 human raters.
+
+- `VisualizeSimulatedRatings.ipnyb` is a notebook to visualize the distributions of simulated ratings, including categorical ratings.
