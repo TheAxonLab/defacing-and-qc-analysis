@@ -32,14 +32,11 @@ df = ratings.find_pandas_all({"dataset": "IXI dataset - MRIQC derivatives"})
 # so that comments do not get split into multiple lines
 df["comments"] = df["comments"].str.replace("\n", ", ")
 
-# Convert 'artifacts' list to a string so that it does not get split over several columns
-df["artifacts"] = df["artifacts"].apply(lambda x: ", ".join(map(str, x)))
-
 # Drop columns we don't need
 df = df.drop(columns=["_id", "md5sum"])
 
 # Save dataframe to csv so we can load it in R
-df.to_csv("IXI_ratings_df.csv")
+df.to_csv("IXI_ratings_df.tsv", sep="\t", index=False)
 
 # Close the connection
 client.close()
