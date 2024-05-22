@@ -11,6 +11,9 @@ with open('../randomization/IXI_blind_dict.json') as f:
 # Rename the 'subject' column of the dataframe to 'randomized_id'
 df = df.rename(columns={'subject': 'randomized_id'})
 
+# In case the same rater gave two different ratings to the same image, we consider only the last rating and sum the time it took to rate the images
+df = df.groupby(['randomized_id', 'rater_id']).agg({'dataset': 'last', 'rating': 'last', 'time_sec': 'sum', 'artifacts': 'last', 'confidence': 'last', 'comments': 'last'}).reset_index()
+
 # Function to get value from dictionary
 def get_value(key):
     # Extract only the number and remove preceding zeros
