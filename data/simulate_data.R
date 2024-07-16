@@ -52,10 +52,10 @@ simulate_data <- function(n_rated, n_sub, n_rater, perc_biased, ratings_range=1:
     rater <- rep(1:n_rater, each=n_sub*2)
 
     #Convert to dataframe to use in regression
-    df <- data.frame(sub = sub)
+    df <- data.frame(subject = sub)
     df$defaced <- factor(defaced, levels = 0:1, labels = c("original", "defaced"))
-    df$rater <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
-    df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = ratings_range)
+    df$rater_id <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
+    df$rating <- factor(c(rbind(manual_original_vec, manual_defaced_vec)), levels = ratings_range)
 
     return(df)
 }
@@ -121,15 +121,15 @@ simulate_normal_data <- function(n_rated, n_sub, n_rater, perc_biased, mean=20, 
     rater <- rep(1:n_rater, each=n_sub*2)
 
     #Convert to dataframe to use in regression
-    df <- data.frame(sub = sub)
+    df <- data.frame(subject = sub)
     df$defaced <- factor(defaced, levels = 0:1, labels = c("original", "defaced"))
-    df$rater <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
-    df$ratings <- factor(c(rbind(manual_original_vec, manual_defaced_vec)))
+    df$rater_id <- factor(rater, levels = 1:n_rater, labels = sprintf("rater%02d", 1:n_rater))
+    df$rating <- c(rbind(manual_original_vec, manual_defaced_vec))
 
     return(df)
 }
 
-# Simulate normally distributed data
+# Simulate normally distributed data with a bias
 n_sub <- 185 #nbr of subjects available in the dataset
 n_rated <- 185
 n_rater <- 4 #nbr of raters
@@ -140,7 +140,18 @@ perc_biased <- c(20, 40, 50, 60)
 bias <- 10
 
 df <- simulate_normal_data(n_rated, n_sub, n_rater, perc_biased, mean=mean, sd=sd, bias=bias)
-df$ratings <- as.numeric(df$ratings)
+df$rating <- as.numeric(df$rating)
 
 #Write dataframe to file
 saveRDS(df, file = "simulated_normal_ratings.rds")
+
+# Simulate normally distributed data without a bias
+#Define for each rater the percentage of biased ratings
+perc_biased <- c(10,10,10,10)
+bias <- 1
+
+df <- simulate_normal_data(n_rated, n_sub, n_rater, perc_biased, mean=mean, sd=sd, bias=bias)
+df$rating <- as.numeric(df$rating)
+
+#Write dataframe to file
+saveRDS(df, file = "simulated_normal_nobias_ratings.rds")
