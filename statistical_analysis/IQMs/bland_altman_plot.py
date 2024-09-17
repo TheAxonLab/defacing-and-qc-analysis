@@ -53,6 +53,77 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
+def bland_altman_plot_pc(pc_df, savename, nrow):
+    ## Bland-Altman plot for principal components
+
+    # Separate PCs from defaced and nondefaced images in two dataframes
+    pc_defaced = pc_df[pc_df["defaced"] == 1]
+    pc_nondefaced = pc_df[pc_df["defaced"] == 0]
+
+    # Reorder the dataframes so the subjects' order match
+    pc_defaced = pc_defaced.sort_values("sub")
+    pc_nondefaced = pc_nondefaced.sort_values("sub")
+
+    # Reset the index to start from 0
+    pc_defaced = pc_defaced.reset_index(drop=True)
+    pc_nondefaced = pc_nondefaced.reset_index(drop=True)
+
+    # Drop non-PCs columns
+    pc_defaced = pc_defaced.drop(
+        columns=[
+            "site",
+            "Unnamed: 0",
+            "sub",
+            "defaced",
+        ]
+    )
+    pc_nondefaced = pc_nondefaced.drop(
+        columns=[
+            "site",
+            "Unnamed: 0",
+            "sub",
+            "defaced",
+        ]
+    )
+
+    # Build figure with subplots
+    fig, axs = plt.subplots(nrow, 3, sharex=False, sharey=False, figsize=(45, 45))
+    fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
+
+    # Generate one BA plot per PC
+    for i, (key, pc_d) in enumerate(pc_defaced.items()):
+
+        # BA plot
+        pc_nd = pc_nondefaced[key]
+        bland_altman_plot_i(
+            pc_nd,
+            pc_d,
+            key,
+            axs[i // 3, i % 3],
+            fontsize=32,
+        )
+
+    # Figure description
+
+    fig.text(
+        0.5,
+        0.07,
+        "Mean of principal component on non-defaced and defaced images",
+        fontsize=38,
+        ha="center",
+    )
+    fig.text(
+        0.07,
+        0.5,
+        "PC on non-defaced image - PC on defaced image",
+        fontsize=38,
+        va="center",
+        rotation="vertical",
+    )
+
+    # Save figure
+    plt.savefig(savename, dpi=200)
+
 ## Bland-Altman plot for IQMs
 # Load IQMs
 iqms_df = pd.read_csv("IXI_iqms_df.csv")
@@ -208,88 +279,15 @@ The zero-difference line represents the ideal condition where the IQM value woul
 # Save figure
 plt.savefig("BlandAltman58IQMs.png", dpi=200)
 
-
 ## Bland-Altman plot for principal components
+
 # Load principal components (PCs)
-pc_df = pd.read_csv("IXI_projected_iqms_df.csv")
+pc_df = pd.read_csv("IXI_projected_iqms_df_1std_1pca.csv")
+bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3)
 
-# Separate PCs from defaced and nondefaced images in two dataframes
-pc_defaced = pc_df[pc_df["defaced"] == 1]
-pc_nondefaced = pc_df[pc_df["defaced"] == 0]
 
-# Reorder the dataframes so the subjects' order match
-pc_defaced = pc_defaced.sort_values("sub")
-pc_nondefaced = pc_nondefaced.sort_values("sub")
+pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
+bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3)
 
-# Reset the index to start from 0
-pc_defaced = pc_defaced.reset_index(drop=True)
-pc_nondefaced = pc_nondefaced.reset_index(drop=True)
-
-# Drop non-PCs columns
-pc_defaced = pc_defaced.drop(
-    columns=[
-        "site",
-        "Unnamed: 0",
-        "sub",
-        "defaced",
-    ]
-)
-pc_nondefaced = pc_nondefaced.drop(
-    columns=[
-        "site",
-        "Unnamed: 0",
-        "sub",
-        "defaced",
-    ]
-)
-
-# Build figure with subplots
-fig, axs = plt.subplots(3, 3, sharex=False, sharey=False, figsize=(45, 45))
-fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
-
-# Generate one BA plot per PC
-for i, (key, pc_d) in enumerate(pc_defaced.items()):
-
-    # BA plot
-    pc_nd = pc_nondefaced[key]
-    bland_altman_plot_i(
-        pc_nd,
-        pc_d,
-        key,
-        axs[i // 3, i % 3],
-        fontsize=32,
-    )
-
-# Figure description
-
-fig.text(
-    0.5,
-    0.07,
-    "Mean of principal component on non-defaced and defaced images",
-    fontsize=38,
-    ha="center",
-)
-fig.text(
-    0.07,
-    0.5,
-    "PC on non-defaced image - PC on defaced image",
-    fontsize=38,
-    va="center",
-    rotation="vertical",
-)
-
-fig.text(
-    0.09,
-    0.02,
-    "Figure S3. No principal component (PC) present a significant bias between the defaced and non-defaced image.The bias is visualized by the \n\
-dashed grey line and is computed as the mean of the differences. A bias is considered significant when the 95% confidence interval does\n\
-not contain the zero-difference line. The 95% confidence interval is indicated by the dashed red line and is computed as bias±1.96*SD.\n\
-The zero-difference line represents the ideal condition where the IQM value would be identical between the image with and without face.",
-    fontsize=34,
-    ha="left",
-    wrap=True,
-    fontweight="bold",
-)
-
-# Save figure
-plt.savefig("BlandAltmanPC.png", dpi=200)
+pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
+bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4)
