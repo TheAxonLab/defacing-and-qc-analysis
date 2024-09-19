@@ -108,14 +108,14 @@ def bland_altman_plot_pc(pc_df, savename, nrow):
     fig.text(
         0.5,
         0.07,
-        "Mean of principal component on non-defaced and defaced images",
+        "Mean of principal component on nondefaced and defaced images",
         fontsize=38,
         ha="center",
     )
     fig.text(
         0.07,
         0.5,
-        "PC on non-defaced image - PC on defaced image",
+        "PC on nondefaced image - PC on defaced image",
         fontsize=38,
         va="center",
         rotation="vertical",
@@ -249,23 +249,24 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
 fig.text(
     0.5,
     0.085,
-    "Mean of IQM on non-defaced and defaced images",
+    "Mean of IQM on nondefaced and defaced images",
     fontsize=32,
     ha="center",
 )
 fig.text(
     0.09,
     0.5,
-    "IQM on non-defaced image - IQM on defaced image",
+    "IQM on nondefaced image - IQM on defaced image",
     fontsize=32,
     va="center",
     rotation="vertical",
 )
 
-fig.text(
+
+""" fig.text(
     0.09,
     0.01,
-    "Figure S2. Bland-Altman plots for all non-excluded IQMs. Only the entropy-focus criterion (efc) IQM presents a significant bias between the defaced and non-defaced image (highlighted in yellow).\n\
+    "Figure S2. Bland-Altman plots for all non-excluded IQMs. Only the entropy-focus criterion (efc) IQM presents a significant bias between the defaced and nondefaced image (highlighted in yellow).\n\
 The bias is visualized by the dashed grey line and is computed as the mean of the differences. A bias is considered significant when the 95%\nconfidence interval does \
 not contain the zero-difference line. \
 The 95% confidence interval is indicated by the dashed red line and is computed as bias±1.96*SD. \
@@ -274,10 +275,10 @@ The zero-difference line represents the ideal condition where the IQM value woul
     ha="left",
     wrap=True,
     fontweight="bold",
-)
+) """
 
 # Save figure
-plt.savefig("BlandAltman58IQMs.png", dpi=200)
+plt.savefig("BlandAltman58IQMs.png")
 
 ## Bland-Altman plot for principal components
 
