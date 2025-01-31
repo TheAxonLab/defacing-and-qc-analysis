@@ -12,7 +12,6 @@ def bland_altman_plot_i(
     fontsize,
     offsety=0,
     offsetx=1,
-    facecolor=(1.0, 1.0, 1.0, 1.0),
 ):
     """
     Function to plot one Bland-Altman plot given two sets of data
@@ -21,12 +20,22 @@ def bland_altman_plot_i(
     diff = data1 - data2  # Difference between data1 and data2
     md = np.mean(diff)                   # Mean of the difference
     sd = np.std(diff, axis=0)  # Standard deviation of the difference
+    sem = sd / np.sqrt(len(diff))
+    CI_upper = md + 1.96 * sem
+    CI_lower = md - 1.96 * sem
+
+    # Plot in red the IQMs that present a significant bias, that is when the 95% confidence interval does not contain the zero-difference line
+    facecolor = (1.0, 1.0, 1.0, 1.0)
+    if not (CI_lower <= 0 <= CI_upper):
+        facecolor = (1, 1, 0.6, 0.2)
 
     ax.scatter(mean, diff, color="b")
     ax.set_title(data_label, fontsize=fontsize + 2)
     ax.axhline(md, color="gray", linestyle="--")
     ax.axhline(md + 1.96 * sd, color="red", linestyle="--")
     ax.axhline(md - 1.96 * sd, color="red", linestyle="--")
+    ax.axhline(md + 1.96 * sem, color="blue", linestyle="--")
+    ax.axhline(md - 1.96 * sem, color="blue", linestyle="--")
     ax.tick_params(labelsize=fontsize - 2)
     ax.set_facecolor(facecolor)
 
@@ -184,7 +193,6 @@ axs[7, 7].set_axis_off()
 # Variables to help tweak the plot manually for readability
 offsety = np.zeros((n_iqm, 1))
 offsetx = np.ones((n_iqm, 1))
-facecolor = [axs[0, 0].get_facecolor() for i in range(n_iqm)]
 
 # Generate one BA plot per IQM
 for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
@@ -225,12 +233,6 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         offsety[i] = -0.15
         offsetx[i] = 1.05
 
-    # Manually highlight IQM that seem biased
-    if i in [
-        2,
-    ]:
-        facecolor[i] = (1, 1, 0.6, 0.2)
-
     # BA plot
     iqm_nd = iqms_nondefaced[key]
     bland_altman_plot_i(
@@ -241,7 +243,6 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         fontsize=22,
         offsety=offsety[i],
         offsetx=offsetx[i],
-        facecolor=facecolor[i],
     )
 
 # Figure description
