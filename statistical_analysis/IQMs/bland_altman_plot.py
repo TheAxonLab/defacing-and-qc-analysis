@@ -1,8 +1,9 @@
 import types
+import json
 import pandas as pd
 import numpy as np
-import json
 import matplotlib.pyplot as plt
+from scipy.stats import bootstrap
 
 
 def bland_altman_plot_i(
@@ -26,15 +27,23 @@ def bland_altman_plot_i(
     loa_lower = md - 1.96 * sd
 
     sem = sd / np.sqrt(len(diff)) # Standard error of the mean
-    CI_upper = md + 1.96 * sem # 95% confidence interval
-    CI_lower = md - 1.96 * sem
+    ci_upper = md + 1.96 * sem # 95% confidence interval
+    ci_lower = md - 1.96 * sem
+
+    ## Compute the non-parametric 95% confidence interval
+    day = 220830
+    time = 543417
+    boot_results = bootstrap((diff,), np.mean, n_resamples=10000, method='percentile', random_state=day+time)
+    ci_diff = boot_results.confidence_interval
+    ci_lower_non_param = ci_diff.low
+    ci_upper_non_param = ci_diff.high
 
     # Yellow background if the limit of agreement does not contain zero
     facecolor = (1.0, 1.0, 1.0, 1.0)
     if not (loa_lower <= 0 <= loa_upper):
         facecolor = (1, 1, 0.6, 0.2)
 
-    if not (CI_lower <= 0 <= CI_upper):
+    if not (ci_lower <= 0 <= ci_upper) and not (ci_lower_non_param <= 0 <= ci_upper_non_param):
         data_label += "*"
 
     ax.scatter(mean, diff, color="b")
@@ -43,8 +52,8 @@ def bland_altman_plot_i(
     ax.axhline(loa_upper, color="red", linestyle="--")
     ax.axhline(loa_lower, color="red", linestyle="--")
     if plot_CI:
-        ax.axhline(CI_upper, color="blue", linestyle="--")
-        ax.axhline(CI_lower, color="blue", linestyle="--")
+        ax.axhline(ci_upper, color="blue", linestyle="--")
+        ax.axhline(ci_lower, color="blue", linestyle="--")
     ax.tick_params(labelsize=fontsize - 2)
     ax.set_facecolor(facecolor)
 
@@ -71,7 +80,7 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
-    return md, loa_upper, loa_lower, CI_lower, CI_upper
+    return md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param
 
 def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
     ## Bland-Altman plot for principal components
@@ -118,7 +127,7 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
 
         # BA plot
         pc_nd = pc_nondefaced[key]
-        md, loa_upper, loa_lower, CI_lower, CI_upper = bland_altman_plot_i(
+        md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
             pc_nd,
             pc_d,
             key,
@@ -126,8 +135,11 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
             fontsize=32,
             plot_CI=plot_CI
         )
+        assert loa_lower <= md <= loa_upper
+        assert ci_lower <= md <= ci_upper
+        assert ci_lower_non_param <= md <= ci_upper_non_param
 
-        stats_pc.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": CI_lower, "ci_upper": CI_upper})
+        stats_pc.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
 
     # Figure description
 
@@ -257,7 +269,7 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
 
     # BA plot
     iqm_nd = iqms_nondefaced[key]
-    md, loa_upper, loa_lower, CI_lower, CI_upper = bland_altman_plot_i(
+    md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
         iqm_nd,
         iqm_d,
         key,
@@ -266,8 +278,11 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         offsety=offsety[i],
         offsetx=offsetx[i],
     )
+    assert loa_lower <= md <= loa_upper
+    assert ci_lower <= md <= ci_upper
+    assert ci_lower_non_param <= md <= ci_upper_non_param
 
-    stats.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": CI_lower, "ci_upper": CI_upper})
+    stats.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
 
 # Convert statistics to dataframe
 stats_df = pd.DataFrame(stats)
@@ -329,7 +344,7 @@ stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_pca_site"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
-# Save statistics
+##  Save statistics
 stats_df.to_csv("bias_confidence_intervals.csv", index=False)
 
 # Create a sidecar JSON to explain the column names inside stats_df
@@ -341,8 +356,10 @@ column_descriptions = {
     "Bias": "Mean difference between nondefaced and defaced images",
     "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
     "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
-    "ci_lower": "Lower bound of the 95% confidence interval of the mean difference",
-    "ci_upper": "Upper bound of the 95% confidence interval of the mean difference"
+    "ci_lower_param": "Lower bound of the parametric 95% confidence interval of the mean difference",
+    "ci_upper_param": "Upper bound of the parametric 95% confidence interval of the mean difference",
+    "ci_lower_non_param": "Lower bound of the non-parametric 95% confidence interval of the mean difference",
+    "ci_upper_non_param": "Upper bound of the non-parametric 95% confidence interval of the mean difference",
 }
 
 with open("bias_confidence_intervals.json", "w") as f:

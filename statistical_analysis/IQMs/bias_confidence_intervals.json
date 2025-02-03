@@ -6,6 +6,8 @@
     "Bias": "Mean difference between nondefaced and defaced images",
     "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
     "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
-    "ci_lower": "Lower bound of the 95% confidence interval of the mean difference",
-    "ci_upper": "Upper bound of the 95% confidence interval of the mean difference"
+    "ci_lower_param": "Lower bound of the parametric 95% confidence interval of the mean difference",
+    "ci_upper_param": "Upper bound of the parametric 95% confidence interval of the mean difference",
+    "ci_lower_non_param": "Lower bound of the non-parametric 95% confidence interval of the mean difference",
+    "ci_upper_non_param": "Upper bound of the non-parametric 95% confidence interval of the mean difference"
 }
