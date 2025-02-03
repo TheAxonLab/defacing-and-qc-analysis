@@ -1,0 +1,11 @@
+{
+    "Name": "Name of the IQM or PC",
+    "_1std_1pca": "Principal components from the single standardization and single PCA analysis",
+    "_std_site_1pca": "Principal components from the analysis with standardization per site but a single PCA",
+    "_std_pca_site": "Principal components from the analysis with standardization and PCA per site",
+    "Bias": "Mean difference between nondefaced and defaced images",
+    "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
+    "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
+    "ci_lower": "Lower bound of the 95% confidence interval of the mean difference",
+    "ci_upper": "Upper bound of the 95% confidence interval of the mean difference"
+}
