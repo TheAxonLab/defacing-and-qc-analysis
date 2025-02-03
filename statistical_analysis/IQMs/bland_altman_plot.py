@@ -327,19 +327,19 @@ plt.savefig("BlandAltman58IQMs.png")
 
 # Load principal components (PCs)
 pc_df = pd.read_csv("IXI_projected_iqms_df_1std_1pca.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3, plot_CI=True)
+stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3, plot_CI=False)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["Name"] = stats_pc_df["Name"] + "_1st_1pca"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=True)
+stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=False)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_site_1pca"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=True)
+stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=False)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_pca_site"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
