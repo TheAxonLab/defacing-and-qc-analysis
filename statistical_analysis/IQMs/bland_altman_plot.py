@@ -34,8 +34,6 @@ def bland_altman_plot_i(
     ax.axhline(md, color="gray", linestyle="--")
     ax.axhline(md + 1.96 * sd, color="red", linestyle="--")
     ax.axhline(md - 1.96 * sd, color="red", linestyle="--")
-    ax.axhline(md + 1.96 * sem, color="blue", linestyle="--")
-    ax.axhline(md - 1.96 * sem, color="blue", linestyle="--")
     ax.tick_params(labelsize=fontsize - 2)
     ax.set_facecolor(facecolor)
 
