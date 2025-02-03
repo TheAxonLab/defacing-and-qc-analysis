@@ -12,6 +12,7 @@ def bland_altman_plot_i(
     fontsize,
     offsety=0,
     offsetx=1,
+    plot_CI=False
 ):
     """
     Function to plot one Bland-Altman plot given two sets of data
@@ -31,9 +32,12 @@ def bland_altman_plot_i(
 
     ax.scatter(mean, diff, color="b")
     ax.set_title(data_label, fontsize=fontsize + 2)
-    ax.axhline(md, color="gray", linestyle="--")
+    ax.axhline(md, color="gray", linestyle="-")
     ax.axhline(md + 1.96 * sd, color="red", linestyle="--")
     ax.axhline(md - 1.96 * sd, color="red", linestyle="--")
+    if plot_CI:
+        ax.axhline(md + 1.96 * sem, color="blue", linestyle="--")
+        ax.axhline(md - 1.96 * sem, color="blue", linestyle="--")
     ax.tick_params(labelsize=fontsize - 2)
     ax.set_facecolor(facecolor)
 
@@ -60,7 +64,7 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
-def bland_altman_plot_pc(pc_df, savename, nrow):
+def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
     ## Bland-Altman plot for principal components
 
     # Separate PCs from defaced and nondefaced images in two dataframes
@@ -108,6 +112,7 @@ def bland_altman_plot_pc(pc_df, savename, nrow):
             key,
             axs[i // 3, i % 3],
             fontsize=32,
+            plot_CI=plot_CI
         )
 
     # Figure description
@@ -283,11 +288,11 @@ plt.savefig("BlandAltman58IQMs.png")
 
 # Load principal components (PCs)
 pc_df = pd.read_csv("IXI_projected_iqms_df_1std_1pca.csv")
-bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3)
+bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3, plot_CI=True)
 
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
-bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3)
+bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
-bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4)
+bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=True)
