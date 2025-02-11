@@ -1,7 +1,9 @@
 import types
+import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import bootstrap
 
 
 def bland_altman_plot_i(
@@ -12,7 +14,7 @@ def bland_altman_plot_i(
     fontsize,
     offsety=0,
     offsetx=1,
-    facecolor=(1.0, 1.0, 1.0, 1.0),
+    plot_CI=False
 ):
     """
     Function to plot one Bland-Altman plot given two sets of data
@@ -21,12 +23,37 @@ def bland_altman_plot_i(
     diff = data1 - data2  # Difference between data1 and data2
     md = np.mean(diff)                   # Mean of the difference
     sd = np.std(diff, axis=0)  # Standard deviation of the difference
+    loa_upper = md + 1.96 * sd # 95% limits of agreement
+    loa_lower = md - 1.96 * sd
+
+    sem = sd / np.sqrt(len(diff)) # Standard error of the mean
+    ci_upper = md + 1.96 * sem # 95% confidence interval
+    ci_lower = md - 1.96 * sem
+
+    ## Compute the non-parametric 95% confidence interval
+    day = 220830
+    time = 543417
+    boot_results = bootstrap((diff,), np.mean, n_resamples=10000, method='percentile', random_state=day+time)
+    ci_diff = boot_results.confidence_interval
+    ci_lower_non_param = ci_diff.low
+    ci_upper_non_param = ci_diff.high
+
+    # Yellow background if the limit of agreement does not contain zero
+    facecolor = (1.0, 1.0, 1.0, 1.0)
+    if not (loa_lower <= 0 <= loa_upper):
+        facecolor = (1, 1, 0.6, 0.2)
+
+    if not (ci_lower <= 0 <= ci_upper) and not (ci_lower_non_param <= 0 <= ci_upper_non_param):
+        data_label += "*"
 
     ax.scatter(mean, diff, color="b")
     ax.set_title(data_label, fontsize=fontsize + 2)
-    ax.axhline(md, color="gray", linestyle="--")
-    ax.axhline(md + 1.96 * sd, color="red", linestyle="--")
-    ax.axhline(md - 1.96 * sd, color="red", linestyle="--")
+    ax.axhline(md, color="gray", linestyle="-")
+    ax.axhline(loa_upper, color="red", linestyle="--")
+    ax.axhline(loa_lower, color="red", linestyle="--")
+    if plot_CI:
+        ax.axhline(ci_upper, color="blue", linestyle="--")
+        ax.axhline(ci_lower, color="blue", linestyle="--")
     ax.tick_params(labelsize=fontsize - 2)
     ax.set_facecolor(facecolor)
 
@@ -53,7 +80,9 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
-def bland_altman_plot_pc(pc_df, savename, nrow):
+    return md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param
+
+def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
     ## Bland-Altman plot for principal components
 
     # Separate PCs from defaced and nondefaced images in two dataframes
@@ -90,18 +119,27 @@ def bland_altman_plot_pc(pc_df, savename, nrow):
     fig, axs = plt.subplots(nrow, 3, sharex=False, sharey=False, figsize=(45, 45))
     fig.suptitle("Bland-Altman Plot", fontsize=36, y=0.91)
 
+    # List to aggregate bias-related statistics for each PC
+    stats_pc = []
+
     # Generate one BA plot per PC
     for i, (key, pc_d) in enumerate(pc_defaced.items()):
 
         # BA plot
         pc_nd = pc_nondefaced[key]
-        bland_altman_plot_i(
+        md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
             pc_nd,
             pc_d,
             key,
             axs[i // 3, i % 3],
             fontsize=32,
+            plot_CI=plot_CI
         )
+        assert loa_lower <= md <= loa_upper
+        assert ci_lower <= md <= ci_upper
+        assert ci_lower_non_param <= md <= ci_upper_non_param
+
+        stats_pc.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
 
     # Figure description
 
@@ -123,6 +161,8 @@ def bland_altman_plot_pc(pc_df, savename, nrow):
 
     # Save figure
     plt.savefig(savename, dpi=200)
+
+    return stats_pc
 
 ## Bland-Altman plot for IQMs
 # Load IQMs
@@ -184,7 +224,9 @@ axs[7, 7].set_axis_off()
 # Variables to help tweak the plot manually for readability
 offsety = np.zeros((n_iqm, 1))
 offsetx = np.ones((n_iqm, 1))
-facecolor = [axs[0, 0].get_facecolor() for i in range(n_iqm)]
+
+# List to gather the statistical estimates namely the bias, 95% CI, and 95% LoA   
+stats = [] 
 
 # Generate one BA plot per IQM
 for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
@@ -225,15 +267,9 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         offsety[i] = -0.15
         offsetx[i] = 1.05
 
-    # Manually highlight IQM that seem biased
-    if i in [
-        2,
-    ]:
-        facecolor[i] = (1, 1, 0.6, 0.2)
-
     # BA plot
     iqm_nd = iqms_nondefaced[key]
-    bland_altman_plot_i(
+    md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
         iqm_nd,
         iqm_d,
         key,
@@ -241,8 +277,15 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
         fontsize=22,
         offsety=offsety[i],
         offsetx=offsetx[i],
-        facecolor=facecolor[i],
     )
+    assert loa_lower <= md <= loa_upper
+    assert ci_lower <= md <= ci_upper
+    assert ci_lower_non_param <= md <= ci_upper_non_param
+
+    stats.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
+
+# Convert statistics to dataframe
+stats_df = pd.DataFrame(stats)
 
 # Figure description
 
@@ -284,11 +327,40 @@ plt.savefig("BlandAltman58IQMs.png")
 
 # Load principal components (PCs)
 pc_df = pd.read_csv("IXI_projected_iqms_df_1std_1pca.csv")
-bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3)
-
+stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3, plot_CI=False)
+stats_pc_df = pd.DataFrame(stats_pc)
+stats_pc_df["Name"] = stats_pc_df["Name"] + "_1st_1pca"
+stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
-bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3)
+stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=False)
+stats_pc_df = pd.DataFrame(stats_pc)
+stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_site_1pca"
+stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
-bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4)
+stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=False)
+stats_pc_df = pd.DataFrame(stats_pc)
+stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_pca_site"
+stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
+
+##  Save statistics
+stats_df.to_csv("bias_confidence_intervals.csv", index=False)
+
+# Create a sidecar JSON to explain the column names inside stats_df
+column_descriptions = {
+    "Name": "Name of the IQM or PC",
+    "_1std_1pca": "Principal components from the single standardization and single PCA analysis",
+    "_std_site_1pca": "Principal components from the analysis with standardization per site but a single PCA",
+    "_std_pca_site": "Principal components from the analysis with standardization and PCA per site",
+    "Bias": "Mean difference between nondefaced and defaced images",
+    "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
+    "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
+    "ci_lower_param": "Lower bound of the parametric 95% confidence interval of the mean difference",
+    "ci_upper_param": "Upper bound of the parametric 95% confidence interval of the mean difference",
+    "ci_lower_non_param": "Lower bound of the non-parametric 95% confidence interval of the mean difference",
+    "ci_upper_non_param": "Upper bound of the non-parametric 95% confidence interval of the mean difference",
+}
+
+with open("bias_confidence_intervals.json", "w") as f:
+    json.dump(column_descriptions, f, indent=4)
