@@ -214,7 +214,7 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
 
 ## Bland-Altman plot for IQMs
 # Load IQMs
-iqms_df = pd.read_csv("IXI_iqms_df.csv")
+iqms_df = pd.read_csv("../../data/IXI_IQMs.csv")
 
 # Separate IQMs from defaced and nondefaced images in two dataframes
 iqms_defaced = iqms_df[iqms_df["defaced"] == 1]
@@ -233,7 +233,7 @@ iqms_defaced = iqms_defaced.drop(
     columns=[
         "bids_name",
         "site",
-        "Unnamed: 0",
+        # "Unnamed: 0",
         "sub",
         "defaced",
         "qi_1",
@@ -246,7 +246,7 @@ iqms_nondefaced = iqms_nondefaced.drop(
     columns=[
         "bids_name",
         "site",
-        "Unnamed: 0",
+        # "Unnamed: 0",
         "sub",
         "defaced",
         "qi_1",
