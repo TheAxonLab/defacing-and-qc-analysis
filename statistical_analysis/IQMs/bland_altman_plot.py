@@ -7,33 +7,32 @@ from scipy.stats import bootstrap
 
 
 def bland_altman_plot_i(
-    data1,
-    data2,
-    data_label,
-    ax,
-    fontsize,
-    offsety=0,
-    offsetx=1,
-    plot_CI=False
+    data1, data2, data_label, ax, fontsize, offsety=0, offsetx=1, plot_CI=False
 ):
     """
     Function to plot one Bland-Altman plot given two sets of data
     """
     mean = np.mean([data1, data2], axis=0)
     diff = data1 - data2  # Difference between data1 and data2
-    md = np.mean(diff)                   # Mean of the difference
+    md = np.mean(diff)  # Mean of the difference
     sd = np.std(diff, axis=0)  # Standard deviation of the difference
-    loa_upper = md + 1.96 * sd # 95% limits of agreement
+    loa_upper = md + 1.96 * sd  # 95% limits of agreement
     loa_lower = md - 1.96 * sd
 
-    sem = sd / np.sqrt(len(diff)) # Standard error of the mean
-    ci_upper = md + 1.96 * sem # 95% confidence interval
+    sem = sd / np.sqrt(len(diff))  # Standard error of the mean
+    ci_upper = md + 1.96 * sem  # 95% confidence interval
     ci_lower = md - 1.96 * sem
 
     ## Compute the non-parametric 95% confidence interval
     day = 220830
     time = 543417
-    boot_results = bootstrap((diff,), np.mean, n_resamples=10000, method='percentile', random_state=day+time)
+    boot_results = bootstrap(
+        (diff,),
+        np.mean,
+        n_resamples=10000,
+        method="percentile",
+        random_state=day + time,
+    )
     ci_diff = boot_results.confidence_interval
     ci_lower_non_param = ci_diff.low
     ci_upper_non_param = ci_diff.high
@@ -43,7 +42,9 @@ def bland_altman_plot_i(
     if not (loa_lower <= 0 <= loa_upper):
         facecolor = (1, 1, 0.6, 0.2)
 
-    if not (ci_lower <= 0 <= ci_upper) and not (ci_lower_non_param <= 0 <= ci_upper_non_param):
+    if not (ci_lower <= 0 <= ci_upper) and not (
+        ci_lower_non_param <= 0 <= ci_upper_non_param
+    ):
         data_label += "*"
 
     ax.scatter(mean, diff, color="b")
@@ -80,7 +81,16 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
-    return md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param
+    return (
+        md,
+        loa_lower,
+        loa_upper,
+        ci_lower,
+        ci_upper,
+        ci_lower_non_param,
+        ci_upper_non_param,
+    )
+
 
 def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
     ## Bland-Altman plot for principal components
@@ -124,22 +134,35 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
 
     # Generate one BA plot per PC
     for i, (key, pc_d) in enumerate(pc_defaced.items()):
-
         # BA plot
         pc_nd = pc_nondefaced[key]
-        md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
-            pc_nd,
-            pc_d,
-            key,
-            axs[i // 3, i % 3],
-            fontsize=32,
-            plot_CI=plot_CI
+        (
+            md,
+            loa_lower,
+            loa_upper,
+            ci_lower,
+            ci_upper,
+            ci_lower_non_param,
+            ci_upper_non_param,
+        ) = bland_altman_plot_i(
+            pc_nd, pc_d, key, axs[i // 3, i % 3], fontsize=32, plot_CI=plot_CI
         )
         assert loa_lower <= md <= loa_upper
         assert ci_lower <= md <= ci_upper
         assert ci_lower_non_param <= md <= ci_upper_non_param
 
-        stats_pc.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
+        stats_pc.append(
+            {
+                "Name": key,
+                "Bias": md,
+                "loa_lower": loa_lower,
+                "loa_upper": loa_upper,
+                "ci_lower": ci_lower,
+                "ci_upper": ci_upper,
+                "ci_lower_non_param": ci_lower_non_param,
+                "ci_upper_non_param": ci_upper_non_param,
+            }
+        )
 
     # Figure description
 
@@ -163,6 +186,7 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
     plt.savefig(savename, dpi=200)
 
     return stats_pc
+
 
 ## Bland-Altman plot for IQMs
 # Load IQMs
@@ -225,12 +249,11 @@ axs[7, 7].set_axis_off()
 offsety = np.zeros((n_iqm, 1))
 offsetx = np.ones((n_iqm, 1))
 
-# List to gather the statistical estimates namely the bias, 95% CI, and 95% LoA   
-stats = [] 
+# List to gather the statistical estimates namely the bias, 95% CI, and 95% LoA
+stats = []
 
 # Generate one BA plot per IQM
 for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
-
     # Manually shift labels for readability
     if i in [
         25,
@@ -269,7 +292,15 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
 
     # BA plot
     iqm_nd = iqms_nondefaced[key]
-    md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
+    (
+        md,
+        loa_lower,
+        loa_upper,
+        ci_lower,
+        ci_upper,
+        ci_lower_non_param,
+        ci_upper_non_param,
+    ) = bland_altman_plot_i(
         iqm_nd,
         iqm_d,
         key,
@@ -282,7 +313,18 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
     assert ci_lower <= md <= ci_upper
     assert ci_lower_non_param <= md <= ci_upper_non_param
 
-    stats.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
+    stats.append(
+        {
+            "Name": key,
+            "Bias": md,
+            "loa_lower": loa_lower,
+            "loa_upper": loa_upper,
+            "ci_lower": ci_lower,
+            "ci_upper": ci_upper,
+            "ci_lower_non_param": ci_lower_non_param,
+            "ci_upper_non_param": ci_upper_non_param,
+        }
+    )
 
 # Convert statistics to dataframe
 stats_df = pd.DataFrame(stats)
@@ -333,13 +375,17 @@ stats_pc_df["Name"] = stats_pc_df["Name"] + "_1st_1pca"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=False)
+stats_pc = bland_altman_plot_pc(
+    pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=False
+)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_site_1pca"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
 pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=False)
+stats_pc = bland_altman_plot_pc(
+    pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=False
+)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_pca_site"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
