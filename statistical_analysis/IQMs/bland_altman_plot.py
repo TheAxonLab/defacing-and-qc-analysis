@@ -349,17 +349,30 @@ stats_df.to_csv("bias_confidence_intervals.csv", index=False)
 
 # Create a sidecar JSON to explain the column names inside stats_df
 column_descriptions = {
-    "Name": "Name of the IQM or PC",
-    "_1std_1pca": "Principal components from the single standardization and single PCA analysis",
-    "_std_site_1pca": "Principal components from the analysis with standardization per site but a single PCA",
-    "_std_pca_site": "Principal components from the analysis with standardization and PCA per site",
-    "Bias": "Mean difference between nondefaced and defaced images",
-    "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
-    "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
-    "ci_lower_param": "Lower bound of the parametric 95% confidence interval of the mean difference",
-    "ci_upper_param": "Upper bound of the parametric 95% confidence interval of the mean difference",
-    "ci_lower_non_param": "Lower bound of the non-parametric 95% confidence interval of the mean difference",
-    "ci_upper_non_param": "Upper bound of the non-parametric 95% confidence interval of the mean difference",
+    "columns": {
+        "Name": {"Description": "Name of the IQM or PC"},
+        "Bias": {
+            "Description": "Mean difference between nondefaced and defaced images"
+        },
+        "loa_lower": {
+            "Description": "Lower limit of agreement (mean difference - 1.96 * standard deviation)"
+        },
+        "loa_upper": {
+            "Description": "Upper limit of agreement (mean difference + 1.96 * standard deviation)"
+        },
+        "ci_lower_param": {
+            "Description": "Lower bound of the parametric 95% confidence interval of the mean difference"
+        },
+        "ci_upper_param": {
+            "Description": "Upper bound of the parametric 95% confidence interval of the mean difference"
+        },
+        "ci_lower_non_param": {
+            "Description": "Lower bound of the non-parametric 95% confidence interval of the mean difference"
+        },
+        "ci_upper_non_param": {
+            "Description": "Upper bound of the non-parametric 95% confidence interval of the mean difference"
+        }
+    }
 }
 
 with open("bias_confidence_intervals.json", "w") as f:
