@@ -1,3 +1,4 @@
+from pathlib import Path
 import types
 import json
 import pandas as pd
@@ -5,35 +6,56 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import bootstrap
 
+COLUMN_DESCRIPTIONS = {
+    "metric": "Name of the IQM or PC",
+    "n": "Sample size",
+    "bias": "Mean difference between nondefaced and defaced images",
+    "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
+    "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
+    "ci_lower_param": "Lower bound of the parametric 95% confidence interval of the mean difference",
+    "ci_upper_param": "Upper bound of the parametric 95% confidence interval of the mean difference",
+    "ci_lower_non_param": "Lower bound of the non-parametric 95% confidence interval of the mean difference",
+    "ci_upper_non_param": "Upper bound of the non-parametric 95% confidence interval of the mean difference",
+}
+
+repo_root = Path(__file__).parents[2]
+"""Repository's root path."""
+
+out_path = repo_root / "outputs" / "IQMs"
+"""Output folder."""
+
+out_path.mkdir(parents=True, exist_ok=True)
+
 
 def bland_altman_plot_i(
-    data1,
-    data2,
-    data_label,
-    ax,
-    fontsize,
-    offsety=0,
-    offsetx=1,
-    plot_CI=False
+    data1, data2, data_label, ax, fontsize, offsety=0, offsetx=1, plot_CI=False
 ):
     """
     Function to plot one Bland-Altman plot given two sets of data
     """
+
+    sample_n = len(data1)
     mean = np.mean([data1, data2], axis=0)
     diff = data1 - data2  # Difference between data1 and data2
-    md = np.mean(diff)                   # Mean of the difference
+    md = np.mean(diff)  # Mean of the difference
     sd = np.std(diff, axis=0)  # Standard deviation of the difference
-    loa_upper = md + 1.96 * sd # 95% limits of agreement
+    loa_upper = md + 1.96 * sd  # 95% limits of agreement
     loa_lower = md - 1.96 * sd
 
-    sem = sd / np.sqrt(len(diff)) # Standard error of the mean
-    ci_upper = md + 1.96 * sem # 95% confidence interval
+    sem = sd / np.sqrt(sample_n)  # Standard error of the mean
+    ci_upper = md + 1.96 * sem  # 95% confidence interval
     ci_lower = md - 1.96 * sem
 
     ## Compute the non-parametric 95% confidence interval
     day = 220830
     time = 543417
-    boot_results = bootstrap((diff,), np.mean, n_resamples=10000, method='percentile', random_state=day+time)
+    boot_results = bootstrap(
+        (diff,),
+        np.mean,
+        n_resamples=10000,
+        method="percentile",
+        random_state=day + time,
+    )
     ci_diff = boot_results.confidence_interval
     ci_lower_non_param = ci_diff.low
     ci_upper_non_param = ci_diff.high
@@ -43,7 +65,9 @@ def bland_altman_plot_i(
     if not (loa_lower <= 0 <= loa_upper):
         facecolor = (1, 1, 0.6, 0.2)
 
-    if not (ci_lower <= 0 <= ci_upper) and not (ci_lower_non_param <= 0 <= ci_upper_non_param):
+    if not (ci_lower <= 0 <= ci_upper) and not (
+        ci_lower_non_param <= 0 <= ci_upper_non_param
+    ):
         data_label += "*"
 
     ax.scatter(mean, diff, color="b")
@@ -80,7 +104,17 @@ def bland_altman_plot_i(
 
     ax.xaxis._update_offset_text_position = types.MethodType(bottom_offset, ax.xaxis)
 
-    return md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param
+    return (
+        sample_n,
+        md,
+        loa_lower,
+        loa_upper,
+        ci_lower,
+        ci_upper,
+        ci_lower_non_param,
+        ci_upper_non_param,
+    )
+
 
 def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
     ## Bland-Altman plot for principal components
@@ -124,22 +158,37 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
 
     # Generate one BA plot per PC
     for i, (key, pc_d) in enumerate(pc_defaced.items()):
-
         # BA plot
         pc_nd = pc_nondefaced[key]
-        md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
-            pc_nd,
-            pc_d,
-            key,
-            axs[i // 3, i % 3],
-            fontsize=32,
-            plot_CI=plot_CI
+        (
+            sample_n,
+            md,
+            loa_lower,
+            loa_upper,
+            ci_lower,
+            ci_upper,
+            ci_lower_non_param,
+            ci_upper_non_param,
+        ) = bland_altman_plot_i(
+            pc_nd, pc_d, key, axs[i // 3, i % 3], fontsize=32, plot_CI=plot_CI
         )
         assert loa_lower <= md <= loa_upper
         assert ci_lower <= md <= ci_upper
         assert ci_lower_non_param <= md <= ci_upper_non_param
 
-        stats_pc.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
+        stats_pc.append(
+            {
+                "metric": key,
+                "n": sample_n,
+                "bias": md,
+                "loa_lower": loa_lower,
+                "loa_upper": loa_upper,
+                "ci_lower": ci_lower,
+                "ci_upper": ci_upper,
+                "ci_lower_non_param": ci_lower_non_param,
+                "ci_upper_non_param": ci_upper_non_param,
+            }
+        )
 
     # Figure description
 
@@ -164,9 +213,10 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
 
     return stats_pc
 
+
 ## Bland-Altman plot for IQMs
 # Load IQMs
-iqms_df = pd.read_csv("IXI_iqms_df.csv")
+iqms_df = pd.read_csv(repo_root / "data" / "IXI_IQMs.csv")
 
 # Separate IQMs from defaced and nondefaced images in two dataframes
 iqms_defaced = iqms_df[iqms_df["defaced"] == 1]
@@ -185,7 +235,6 @@ iqms_defaced = iqms_defaced.drop(
     columns=[
         "bids_name",
         "site",
-        "Unnamed: 0",
         "sub",
         "defaced",
         "qi_1",
@@ -198,7 +247,6 @@ iqms_nondefaced = iqms_nondefaced.drop(
     columns=[
         "bids_name",
         "site",
-        "Unnamed: 0",
         "sub",
         "defaced",
         "qi_1",
@@ -225,12 +273,11 @@ axs[7, 7].set_axis_off()
 offsety = np.zeros((n_iqm, 1))
 offsetx = np.ones((n_iqm, 1))
 
-# List to gather the statistical estimates namely the bias, 95% CI, and 95% LoA   
-stats = [] 
+# List to gather the statistical estimates namely the bias, 95% CI, and 95% LoA
+stats = []
 
 # Generate one BA plot per IQM
 for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
-
     # Manually shift labels for readability
     if i in [
         25,
@@ -269,7 +316,16 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
 
     # BA plot
     iqm_nd = iqms_nondefaced[key]
-    md, loa_lower, loa_upper, ci_lower, ci_upper, ci_lower_non_param, ci_upper_non_param = bland_altman_plot_i(
+    (
+        sample_n,
+        md,
+        loa_lower,
+        loa_upper,
+        ci_lower,
+        ci_upper,
+        ci_lower_non_param,
+        ci_upper_non_param,
+    ) = bland_altman_plot_i(
         iqm_nd,
         iqm_d,
         key,
@@ -282,10 +338,24 @@ for i, (key, iqm_d) in enumerate(iqms_defaced.items()):
     assert ci_lower <= md <= ci_upper
     assert ci_lower_non_param <= md <= ci_upper_non_param
 
-    stats.append({"Name": key, "Bias": md, "loa_lower": loa_lower, "loa_upper": loa_upper, "ci_lower": ci_lower, "ci_upper": ci_upper, "ci_lower_non_param": ci_lower_non_param, "ci_upper_non_param": ci_upper_non_param})
+    stats.append(
+        {
+            "metric": key,
+            "n": sample_n,
+            "bias": md,
+            "loa_lower": loa_lower,
+            "loa_upper": loa_upper,
+            "ci_lower": ci_lower,
+            "ci_upper": ci_upper,
+            "ci_lower_non_param": ci_lower_non_param,
+            "ci_upper_non_param": ci_upper_non_param,
+        }
+    )
 
 # Convert statistics to dataframe
 stats_df = pd.DataFrame(stats)
+##  Save statistics
+stats_df.to_csv(out_path / "BA_stats-IQMs.tsv", index=False, sep="\t")
 
 # Figure description
 
@@ -321,46 +391,25 @@ The zero-difference line represents the ideal condition where the IQM value woul
 ) """
 
 # Save figure
-plt.savefig("BlandAltman58IQMs.png")
+plt.savefig(out_path / "figureS16.png")
 
 ## Bland-Altman plot for principal components
-
-# Load principal components (PCs)
-pc_df = pd.read_csv("IXI_projected_iqms_df_1std_1pca.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_1std_1pca.png", 3, plot_CI=False)
-stats_pc_df = pd.DataFrame(stats_pc)
-stats_pc_df["Name"] = stats_pc_df["Name"] + "_1st_1pca"
-stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
-
-pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_site_1pca.png", 3, plot_CI=False)
-stats_pc_df = pd.DataFrame(stats_pc)
-stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_site_1pca"
-stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
-
-pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
-stats_pc = bland_altman_plot_pc(pc_df, "BlandAltmanPC_std_pca_site.png", 4, plot_CI=False)
-stats_pc_df = pd.DataFrame(stats_pc)
-stats_pc_df["Name"] = stats_pc_df["Name"] + "_std_pca_site"
-stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
-
-##  Save statistics
-stats_df.to_csv("bias_confidence_intervals.csv", index=False)
+nrows = {
+    "1std_1pca": 3,
+    "std_site_1pca": 3,
+    "std_pca_site": 4,
+}
+for i, suffix in enumerate(nrows.keys()):
+    pc_df = pd.read_csv(repo_root / "data" / f"IXI_IQM-PCA_{suffix}.csv")
+    stats_pc = bland_altman_plot_pc(
+        pc_df,
+        str(out_path / f"figureS{i + 17}.png"),
+        nrows[suffix],
+        plot_CI=False,
+    )
+    stats_pc_df = pd.DataFrame(stats_pc)
+    stats_pc_df.to_csv(out_path / f"BA_stats-PCA_{suffix}.tsv", index=False, sep="\t")
 
 # Create a sidecar JSON to explain the column names inside stats_df
-column_descriptions = {
-    "Name": "Name of the IQM or PC",
-    "_1std_1pca": "Principal components from the single standardization and single PCA analysis",
-    "_std_site_1pca": "Principal components from the analysis with standardization per site but a single PCA",
-    "_std_pca_site": "Principal components from the analysis with standardization and PCA per site",
-    "Bias": "Mean difference between nondefaced and defaced images",
-    "loa_lower": "Lower limit of agreement (mean difference - 1.96 * standard deviation)",
-    "loa_upper": "Upper limit of agreement (mean difference + 1.96 * standard deviation)",
-    "ci_lower_param": "Lower bound of the parametric 95% confidence interval of the mean difference",
-    "ci_upper_param": "Upper bound of the parametric 95% confidence interval of the mean difference",
-    "ci_lower_non_param": "Lower bound of the non-parametric 95% confidence interval of the mean difference",
-    "ci_upper_non_param": "Upper bound of the non-parametric 95% confidence interval of the mean difference",
-}
-
-with open("bias_confidence_intervals.json", "w") as f:
-    json.dump(column_descriptions, f, indent=4)
+column_descriptions = {k: {"Description": v} for k, v in COLUMN_DESCRIPTIONS.items()}
+(out_path / "BA_stats.json").write_text(json.dumps(column_descriptions, indent=2))
