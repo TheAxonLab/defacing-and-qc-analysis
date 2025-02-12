@@ -26,6 +26,7 @@ out_path = repo_root / "outputs" / "IQMs"
 
 out_path.mkdir(parents=True, exist_ok=True)
 
+
 def bland_altman_plot_i(
     data1, data2, data_label, ax, fontsize, offsety=0, offsetx=1, plot_CI=False
 ):
