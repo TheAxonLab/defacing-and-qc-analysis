@@ -233,7 +233,6 @@ iqms_defaced = iqms_defaced.drop(
     columns=[
         "bids_name",
         "site",
-        # "Unnamed: 0",
         "sub",
         "defaced",
         "qi_1",
@@ -246,7 +245,6 @@ iqms_nondefaced = iqms_nondefaced.drop(
     columns=[
         "bids_name",
         "site",
-        # "Unnamed: 0",
         "sub",
         "defaced",
         "qi_1",
@@ -394,19 +392,19 @@ plt.savefig("figureS16.png")
 ## Bland-Altman plot for principal components
 
 # Load principal components (PCs)
-pc_df = pd.read_csv("IXI_projected_iqms_df_1std_1pca.csv")
+pc_df = pd.read_csv("../../data/IXI_IQM-PCA_1std_1pca.csv")
 stats_pc = bland_altman_plot_pc(pc_df, "figureS17.png", 3, plot_CI=False)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["metric"] = stats_pc_df["metric"] + "_1st_1pca"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
-pc_df = pd.read_csv("IXI_projected_iqms_df_std_site_1pca.csv")
+pc_df = pd.read_csv("../../data/IXI_IQM-PCA_std_site_1pca.csv")
 stats_pc = bland_altman_plot_pc(pc_df, "figureS18.png", 3, plot_CI=False)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["metric"] = stats_pc_df["metric"] + "_std_site_1pca"
 stats_df = pd.concat([stats_df, stats_pc_df], ignore_index=True)
 
-pc_df = pd.read_csv("IXI_projected_iqms_df_std_pca_site.csv")
+pc_df = pd.read_csv("../../data/IXI_IQM-PCA_std_pca_site.csv")
 stats_pc = bland_altman_plot_pc(pc_df, "figureS19.png", 4, plot_CI=False)
 stats_pc_df = pd.DataFrame(stats_pc)
 stats_pc_df["metric"] = stats_pc_df["metric"] + "_std_pca_site"
