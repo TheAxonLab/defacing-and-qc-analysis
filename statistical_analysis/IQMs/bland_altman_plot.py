@@ -391,7 +391,7 @@ The zero-difference line represents the ideal condition where the IQM value woul
 ) """
 
 # Save figure
-plt.savefig(out_path / "figureS16.png")
+plt.savefig(out_path / "S16_figure.png")
 
 ## Bland-Altman plot for principal components
 nrows = {
@@ -403,7 +403,7 @@ for i, suffix in enumerate(nrows.keys()):
     pc_df = pd.read_csv(repo_root / "data" / f"IXI_IQM-PCA_{suffix}.csv")
     stats_pc = bland_altman_plot_pc(
         pc_df,
-        str(out_path / f"figureS{i + 17}.png"),
+        str(out_path / f"S{i + 17}_figure.png"),
         nrows[suffix],
         plot_CI=False,
     )
