@@ -38,7 +38,7 @@ def iqm_dist(
     ax.xaxis.offsetText.set_fontsize(fontsize - 2)
 
 # Load IQMs
-iqms_df = pd.read_csv("IXI_iqms_df.csv")
+iqms_df = pd.read_csv("S2_Data.csv")
 
 # Drop non-IQM columns
 iqms_df = iqms_df.drop(

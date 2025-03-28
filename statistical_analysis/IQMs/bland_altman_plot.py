@@ -216,7 +216,7 @@ def bland_altman_plot_pc(pc_df, savename, nrow, plot_CI=False):
 
 ## Bland-Altman plot for IQMs
 # Load IQMs
-iqms_df = pd.read_csv(repo_root / "data" / "IXI_IQMs.csv")
+iqms_df = pd.read_csv(repo_root / "data" / "S2_Data.csv")
 
 # Separate IQMs from defaced and nondefaced images in two dataframes
 iqms_defaced = iqms_df[iqms_df["defaced"] == 1]
@@ -391,25 +391,28 @@ The zero-difference line represents the ideal condition where the IQM value woul
 ) """
 
 # Save figure
-plt.savefig(out_path / "S16_figure.png")
+plt.savefig(out_path / "S15_figure.png")
 
 ## Bland-Altman plot for principal components
 nrows = {
-    "1std_1pca": 3,
-    "std_site_1pca": 3,
-    "std_pca_site": 4,
+    "S3_Data": 3,
+    "S4_Data": 3,
+    "S5_Data": 4,
 }
-for i, suffix in enumerate(nrows.keys()):
-    pc_df = pd.read_csv(repo_root / "data" / f"IXI_IQM-PCA_{suffix}.csv")
+
+OUTPUT_FIGURE_BASE = 16
+OUTPUT_DATA_BASE = 10
+for i, src_name in enumerate(nrows.keys()):
+    pc_df = pd.read_csv(repo_root / "data" / f"{src_name}.csv")
     stats_pc = bland_altman_plot_pc(
         pc_df,
-        str(out_path / f"S{i + 17}_figure.png"),
-        nrows[suffix],
+        str(out_path / f"S{i + OUTPUT_FIGURE_BASE}_figure.png"),
+        nrows[src_name],
         plot_CI=False,
     )
     stats_pc_df = pd.DataFrame(stats_pc)
-    stats_pc_df.to_csv(out_path / f"BA_stats-PCA_{suffix}.tsv", index=False, sep="\t")
+    stats_pc_df.to_csv(out_path / f"S{i + OUTPUT_DATA_BASE}_Data.tsv", index=False, sep="\t")
 
 # Create a sidecar JSON to explain the column names inside stats_df
 column_descriptions = {k: {"Description": v} for k, v in COLUMN_DESCRIPTIONS.items()}
-(out_path / "BA_stats.json").write_text(json.dumps(column_descriptions, indent=2))
+(out_path / f"S{'+'.join([str(OUTPUT_DATA_BASE + i) for i in range(3)])}_stats.json").write_text(json.dumps(column_descriptions, indent=2))
