@@ -1,14 +1,12 @@
-## Scripts to handle data associated to the registered report
+## Datasets
 
-- `from_mongodb_to_dataframe.py` is the script to load the ratings from the Mongo database into a data frame.
+- `S1_Data.tsv` contains the same information as above but with the addition of the defacing status and the original subject ID before obfuscation and shuffling. It is the result of running `augment_IXI_df.py` with `IXI_ratings_df.tsv` as input.
 
-- `augment_IXI_df.py` is the script to reconstruct the pairing to match the non-defaced image with its corresponding defaced image for each subject using the pairing dictionary we saved when we performed the randomization.
+- `S2_Data.tsv` is the table of IQMs used in the automated QC analyses.
 
-- `IXI_ratings_df.tsv` contains the quality scores assigned by the 4 raters on the images of the IXI dataset, the list of artifacts detected, the optional associated comments, and the assessment time.
+- `S3-5_Data.tsv` are the components extracted from IQMs in the corresponding analyses.
 
-- `S1_Data.tsv` contains the same information as above but with the addition of the defacing status and the original subject ID before obfuscation and shuffling. It results from running `augment_IXI_df.py` with `IXI_ratings_df.tsv` as input.
-
-- `simulate_data.R` is a script to simulate raters manually assigning quality grades to subjects in original and defaced conditions. The simulated data have a positive bias towards defaced ratings.
+- `IXI_ratings_df.tsv` contains the quality scores assigned by the 4 raters on the images of the IXI dataset, the list of artifacts detected, the optional associated comments and the time it took for assessment.
 
 - `simulated_normal_ratings.rds` contains the ratings simulated with a normal distribution using the `simulate_data.R` code, which simulates a bias in favor of defaced images.
 
