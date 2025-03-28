@@ -1,7 +1,17 @@
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+
+repo_root = Path(__file__).parents[2]
+"""Repository's root path."""
+
+out_path = repo_root / "outputs" / "IQMs"
+"""Output folder."""
+
+out_path.mkdir(parents=True, exist_ok=True)
 
 
 def iqm_dist(
@@ -9,14 +19,14 @@ def iqm_dist(
     data_label,
     ax,
     fontsize,
-    offsety=0,
+    bins=50,
     facecolor=(1.0, 1.0, 1.0, 1.0),
 ):
     """
     Function to plot one IQM distribution
     """
     
-    sns.histplot(data, kde=False, bins=15, ax=ax)
+    sns.histplot(data, kde=False, ax=ax, stat='probability', bins=bins)
 
     ax.set_title(data_label, fontsize=fontsize + 2)
     ax.tick_params(labelsize=fontsize - 2)
@@ -25,27 +35,29 @@ def iqm_dist(
     ax.set_xlabel('')
     ax.set_ylabel('')
 
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+
     # Scientific notation of y-axis
-    ax.ticklabel_format(axis="y", style="scientific", scilimits=(-1, 1))
+    # ax.ticklabel_format(axis="y", style="scientific", scilimits=(-1, 1))
 
-    # Manually offset text for visibility
-    ax.yaxis.offsetText.set_fontsize(fontsize - 2)
-    ty = ax.yaxis.get_offset_text()
-    ty.set_x(offsety)
+    # # Manually offset text for visibility
+    # ax.yaxis.offsetText.set_fontsize(fontsize - 2)
+    # ty = ax.yaxis.get_offset_text()
+    # ty.set_x(offsety)
 
-    # Scientific notation of xaxis
-    ax.ticklabel_format(axis="x", style="scientific", scilimits=(-5, 5))
-    ax.xaxis.offsetText.set_fontsize(fontsize - 2)
+    # # Scientific notation of xaxis
+    # ax.ticklabel_format(axis="x", style="scientific", scilimits=(-5, 5))
+    # ax.xaxis.offsetText.set_fontsize(fontsize - 2)
 
 # Load IQMs
-iqms_df = pd.read_csv("S2_Data.csv")
+iqms_df = pd.read_csv(repo_root / "data" / "S2_Data.csv")
 
 # Drop non-IQM columns
 iqms_df = iqms_df.drop(
     columns=[
         "bids_name",
         "site",
-        "Unnamed: 0",
         "sub",
         "defaced",
     ]
@@ -56,7 +68,7 @@ n_iqm = len(iqms_df.keys())
 
 # Build figure with subplots
 fig, axs = plt.subplots(8, 8, sharex=False, sharey=False, figsize=(45, 45))
-fig.suptitle("Histogram", fontsize=36, y=0.91)
+# fig.suptitle("Histogram", fontsize=36, y=0.91)
 
 # Hide the unpopulated plots
 axs[7, 6].set_axis_off()
@@ -121,40 +133,9 @@ for i, (key, iqm) in enumerate(iqms_df.items()):
         key,
         ax = axs[i // 8, i % 8],
         fontsize=22,
-        offsety=offsety[i],
+        # offsety=offsety[i],
         facecolor=facecolor[i],
     )
 
-# Figure description
-
-fig.text(
-    0.5,
-    0.085,
-    "Image Quality Metrics (IQM) value",
-    fontsize=32,
-    ha="center",
-)
-fig.text(
-    0.09,
-    0.5,
-    "Count",
-    fontsize=32,
-    va="center",
-    rotation="vertical",
-)
-
-fig.text(
-    0.09,
-    0.03,
-    "Figure S1. Distribution of the IQMs. The IQMs calculated from both defaced and non-defaced images were pooled together to draw the distributions.\n\
-This plot shows that qi_1, summary_bg_p05 are problematically always zero, while summary_bg_mad, summary_bg_median are always 0 except for\n\
-two images which correspond to the defaced and non-defaced image of the same subject. These observation led us to exclude those IQMs from our\n\
-analysis. Further investigation is needed to understand why these IQMs seem to be erroneously computed.",
-    fontsize=34,
-    ha="left",
-    wrap=True,
-    fontweight="bold",
-)
-
 # Save figure
-plt.savefig("IQMs_distribution.png", dpi=200)
+plt.savefig(out_path / "S12_figure.png", dpi=200, bbox_inches='tight')
