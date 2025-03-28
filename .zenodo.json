@@ -1,0 +1,74 @@
+{
+    "custom_fields": {
+      "code:codeRepository": "https://github.com/TheAxonLab/defacing-and-qc-analysis",
+      "code:programmingLanguage": [
+        {
+          "id": "python",
+          "title": {
+            "en": "Python"
+          }
+        },
+        {
+          "id": "r",
+          "title": {
+            "en": "R"
+          }
+        }
+      ],
+      "journal:journal": {
+        "title": "Plos Biology"
+      }
+    },
+    "metadata": {
+      "creators": [
+        {
+          "affiliations": [
+            {
+                "name": "Lausanne University Hospital and University of Lausanne"
+            }
+          ],
+          "person_or_org": {
+            "family_name": "Provins",
+            "name": "C\u00e9line",
+            "type": "personal"
+          }
+        },
+        {
+          "affiliations": [
+            {
+              "name": "Lausanne University Hospital and University of Lausanne"
+            }
+          ],
+          "person_or_org": {
+            "family_name": "Esteban",
+            "name": "Oscar",
+            "type": "personal"
+          }
+        }
+      ],
+      "description": "<h2>Source code associated to finalized Registered Report</h2>",
+      "resource_type": {
+        "id": "publication",
+        "title": {
+          "de": "Publikation",
+          "en": "Publication"
+        }
+      },
+      "rights": [
+        {
+          "description": {
+            "en": "A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code."
+          },
+          "id": "apache-2.0",
+          "props": {
+            "scheme": "spdx",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
+          },
+          "title": {
+            "en": "Apache License 2.0"
+          }
+        }
+      ],
+      "title": "Code corresponding to Registered Report 'Removing facial features from structural MRI images biases visual quality assessment'"
+    }
+  }
