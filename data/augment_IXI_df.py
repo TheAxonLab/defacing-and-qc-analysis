@@ -59,4 +59,4 @@ df['rater_id'] = df['rater_id'].apply(anonymize_rater)
 df = df.drop(columns=['defacing_raw'])
 
 # Save the dataframe to a new CSV file
-df.to_csv('IXI_augmented_ratings_df.tsv', sep='\t', index=False)
+df.to_csv('S1_Data.tsv', sep='\t', index=False)

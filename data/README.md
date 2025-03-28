@@ -6,7 +6,7 @@
 
 - `IXI_ratings_df.tsv` contains the quality scores assigned by the 4 raters on the images of the IXI dataset, the list of artifacts detected, the optional associated comments and the time it took for assessment.
 
-- `IXI_augmented_ratings_df.tsv` contains the same information as above but with the addition of the defacing status and the original subject ID before obfuscation and shuffling. It is the result of running `augment_IXI_df.py` with `IXI_ratings_df.tsv` as input.
+- `S1_Data.tsv` contains the same information as above but with the addition of the defacing status and the original subject ID before obfuscation and shuffling. It is the result of running `augment_IXI_df.py` with `IXI_ratings_df.tsv` as input.
 
 - `simulate_data.R` is a script to simulate raters manually assigning quality grades to subjects in original and defaced conditions. The simulated data have a positive bias towards defaced ratings.
 
